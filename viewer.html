@@ -57,6 +57,7 @@
             flex: 1;
             min-height: 0;
             overflow: hidden;
+            position: relative;
         }
 
         /* ── Sidebar ── */
@@ -68,6 +69,8 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            position: relative;
+            z-index: 20;
         }
         .sidebar-nav {
             display: flex;
@@ -162,37 +165,91 @@
             cursor: pointer;
             font-size: 1em;
             color: #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             border-bottom: 1px solid #f0f0f0;
         }
         .date-list li:hover { color: #000; background: #fafafa; }
-        .date-list li .date-label { }
-        .date-list li .date-tags {
-            display: flex;
-            gap: 4px;
+
+        /* ── Slide-out date drawer ── */
+        .date-drawer {
+            position: absolute;
+            top: 0;
+            left: 210px;
+            bottom: 0;
+            width: 220px;
+            background: #1a1a1a;
+            color: #ccc;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+            z-index: 10;
+            padding: 16px;
+            pointer-events: none;
         }
-        .date-list li .tag {
-            font-size: 0.7em;
-            padding: 2px 6px;
-            background: #eee;
-            border-radius: 3px;
-            color: #666;
+        .date-drawer.open {
+            transform: translateX(0);
+            pointer-events: auto;
         }
+        .date-drawer h3 {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+            margin-bottom: 12px;
+            font-weight: normal;
+        }
+        .date-drawer .drawer-list {
+            list-style: none;
+        }
+        .date-drawer .drawer-list li {
+            padding: 7px 0;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #aaa;
+            border-bottom: 1px solid #333;
+        }
+        .date-drawer .drawer-list li:hover { color: #fff; }
 
         /* Note content view */
         .note-view { display: none; }
         .note-view.active { display: block; }
-        .note-back {
-            display: inline-block;
+        .note-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 16px;
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9em;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .hamburger {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 2px;
+            font-family: inherit;
+        }
+        .hamburger span {
+            display: block;
+            height: 2px;
+            width: 18px;
+            background: #333;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        .hamburger:hover span { background: #000; }
+        .note-header-label {
+            font-size: 1em;
+            color: #444;
             cursor: pointer;
         }
-        .note-back:hover { color: #111; }
+        .note-header-label:hover { color: #111; }
         .note-meta {
             color: #666;
             font-size: 0.9em;
@@ -278,6 +335,12 @@
             </div>
         </aside>
 
+        <!-- Date drawer (slides out from under sidebar) -->
+        <div class="date-drawer" id="dateDrawer">
+            <h3 id="drawerTitle">dates</h3>
+            <ul class="drawer-list" id="drawerList"></ul>
+        </div>
+
         <!-- Main content area -->
         <div class="main" id="mainContent">
             <div class="prompt" id="promptState">Select a writer to view their notes.</div>
@@ -289,7 +352,12 @@
             </div>
 
             <div class="note-view" id="noteView">
-                <a class="note-back" id="noteBack">← back to dates</a>
+                <div class="note-header" id="noteHeader">
+                    <button class="hamburger" id="noteHamburger" aria-label="Toggle date list">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <span class="note-header-label" id="noteHeaderLabel"></span>
+                </div>
                 <div class="note-meta" id="noteMeta"></div>
                 <div class="note-body" id="noteBody"></div>
             </div>
@@ -372,9 +440,26 @@
         });
     }
 
+    function tagTooltip(n) {
+        var visible = n.tags.filter(function(t) { return t !== 'the-hunt'; });
+        return visible.length ? visible.join(', ') : '';
+    }
+
+    function buildDateItems(filtered, container, onClickNote) {
+        container.innerHTML = filtered.map(function(n) {
+            return '<li data-slug="' + n.slug + '" title="' + escapeHtml(tagTooltip(n)) + '">'
+                + n.date
+                + '</li>';
+        }).join('');
+        container.querySelectorAll('li').forEach(function(li) {
+            li.onclick = function() { onClickNote(li.dataset.slug); };
+        });
+    }
+
     function showWriter(author) {
         selectedWriter = author;
         updateWriterCounts();
+        closeDrawer();
 
         document.getElementById('promptState').style.display = 'none';
         document.getElementById('noteView').classList.remove('active');
@@ -393,38 +478,45 @@
             return;
         }
         emptyEl.style.display = 'none';
+        buildDateItems(filtered, dateEl, showNote);
+    }
 
-        dateEl.innerHTML = filtered.map(function(n) {
-            var tagsHtml = n.tags.filter(function(t) { return t !== 'the-hunt'; }).map(function(t) {
-                return '<span class="tag">' + escapeHtml(t) + '</span>';
-            }).join('');
-            return '<li data-slug="' + n.slug + '">'
-                + '<span class="date-label">' + n.date + '</span>'
-                + '<span class="date-tags">' + tagsHtml + '</span>'
-                + '</li>';
-        }).join('');
-
-        dateEl.querySelectorAll('li').forEach(function(li) {
-            li.onclick = function() { showNote(li.dataset.slug); };
+    function populateDrawer(author) {
+        var filtered = getWriterNotes(author);
+        var list = document.getElementById('drawerList');
+        document.getElementById('drawerTitle').textContent = author;
+        buildDateItems(filtered, list, function(slug) {
+            closeDrawer();
+            showNote(slug);
         });
+    }
+
+    function toggleDrawer() {
+        document.getElementById('dateDrawer').classList.toggle('open');
+    }
+
+    function closeDrawer() {
+        document.getElementById('dateDrawer').classList.remove('open');
     }
 
     function showNote(slug) {
         var note = notes.find(function(n) { return n.slug === slug; });
         if (!note) return;
 
+        closeDrawer();
         document.getElementById('writerView').style.display = 'none';
         var nv = document.getElementById('noteView');
         nv.classList.add('active');
 
-        document.getElementById('noteMeta').textContent = note.author + ' · ' + note.date
+        document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
+        populateDrawer(note.author);
+
+        document.getElementById('noteMeta').textContent = note.date
             + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
         document.getElementById('noteBody').innerHTML = note.html;
-        document.getElementById('noteBack').onclick = function(e) {
-            e.preventDefault();
-            nv.classList.remove('active');
-            showWriter(note.author);
-        };
+
+        document.getElementById('noteHamburger').onclick = toggleDrawer;
+        document.getElementById('noteHeaderLabel').onclick = toggleDrawer;
 
         document.querySelector('.main').scrollTop = 0;
     }

@@ -6,265 +6,431 @@
     <title>100Devs Notes</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
         body {
             font-family: Helvetica, Arial, sans-serif;
             background: #fff;
             color: #111;
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        header {
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #ddd;
-        }
-        h1 { font-size: 1.75em; font-weight: normal; }
-        .back { margin-top: 8px; }
-        .back a { color: #666; text-decoration: none; }
-        .back a:hover { color: #111; }
-        .filters {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 24px;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        .page-header {
+            display: flex;
             align-items: center;
+            gap: 16px;
+            padding: 20px 24px 16px;
         }
-        .filters label { font-size: 0.9em; color: #666; }
-        select {
-            padding: 6px 10px;
-            font-size: 0.95em;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #fff;
+        .page-header img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
         }
-        .tag-filters {
+        .page-header .header-text { display: flex; flex-direction: column; }
+        .page-header h1 {
+            font-size: 2em;
+            font-weight: normal;
+            line-height: 1;
+        }
+        .page-header .social-links {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .tag-filters button {
-            padding: 6px 12px;
-            font-size: 0.9em;
-            border: 1px solid #ccc;
-            background: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .tag-filters button:hover, .tag-filters button.active {
-            background: #111;
-            color: #fff;
-            border-color: #111;
-        }
-        .note-list { list-style: none; }
-        .note-list li {
-            margin-bottom: 12px;
-            padding: 12px 16px;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        .note-list li:hover { background: #f8f8f8; }
-        .note-list .meta {
-            font-size: 0.85em;
-            color: #666;
+            gap: 12px;
             margin-top: 4px;
         }
-        .note-list .tags { margin-top: 6px; }
-        .note-list .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: 0.75em;
-            background: #eee;
-            border-radius: 4px;
-            margin-right: 4px;
+        .page-header .social-links a {
+            color: #111;
+            opacity: 0.5;
+            display: flex;
+            align-items: center;
         }
-        .contributor-group {
-            margin-bottom: 24px;
+        .page-header .social-links a:hover { opacity: 1; }
+        .page-header .social-links svg { width: 16px; height: 16px; fill: #111; }
+
+        /* ── Layout ── */
+        .layout {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
-        .contributor-group h3 {
-            font-size: 1.1em;
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 210px;
+            min-width: 210px;
+            background: #111;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-nav {
+            display: flex;
+            gap: 16px;
+            padding: 16px 16px 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+        }
+        .sidebar-nav a {
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.7;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active { opacity: 1; }
+        .sidebar-nav .sep { opacity: 0.3; }
+
+        .sidebar-section {
+            padding: 14px 16px;
+        }
+        .sidebar-section h3 {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+            margin-bottom: 10px;
             font-weight: normal;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
+        }
+
+        /* Tag filter buttons */
+        .tag-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tag-filters button {
+            padding: 4px 10px;
+            font-size: 0.8em;
+            border: 1px solid #444;
+            background: transparent;
+            color: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .tag-filters button:hover { border-color: #999; color: #fff; }
+        .tag-filters button.active {
+            background: #fff;
+            color: #111;
+            border-color: #fff;
+        }
+
+        /* Writer list */
+        .writer-list {
+            list-style: none;
+        }
+        .writer-list li {
+            padding: 6px 0;
+            font-size: 0.95em;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .writer-list li:hover { color: #fff; }
+        .writer-list li.active { color: #fff; font-weight: bold; }
+        .writer-list .note-count {
+            font-size: 0.75em;
+            opacity: 0.5;
+            margin-left: 4px;
+        }
+
+        /* ── Main content ── */
+        .main {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        /* Writer + date list view */
+        .writer-view { }
+        .writer-view h2 {
+            font-size: 1.4em;
+            font-weight: normal;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #ddd;
+        }
+        .date-list {
+            list-style: none;
+        }
+        .date-list li {
+            padding: 8px 0;
+            cursor: pointer;
+            font-size: 1em;
             color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .contributor-group .contributor-notes {
-            padding-left: 12px;
+        .date-list li:hover { color: #000; background: #fafafa; }
+        .date-list li .date-label { }
+        .date-list li .date-tags {
+            display: flex;
+            gap: 4px;
         }
-        .note-content {
-            display: none;
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid #ddd;
+        .date-list li .tag {
+            font-size: 0.7em;
+            padding: 2px 6px;
+            background: #eee;
+            border-radius: 3px;
+            color: #666;
         }
-        .note-content.active { display: block; }
-        .note-content h2, .note-content h3 { margin: 1em 0 0.5em; font-size: 1.1em; }
-        .note-content p { margin: 0.5em 0; }
-        .note-content ul, .note-content ol { margin: 0.5em 0; padding-left: 1.5em; }
-        .note-content pre { background: #f5f5f5; padding: 12px; overflow-x: auto; font-size: 0.9em; margin: 0.5em 0; border-radius: 4px; }
-        .note-content code { background: #f5f5f5; padding: 2px 6px; font-size: 0.9em; border-radius: 3px; }
-        .note-content pre code { background: none; padding: 0; }
-        .note-content .meta { color: #666; font-size: 0.9em; margin-bottom: 16px; }
-        .empty { color: #666; font-style: italic; padding: 24px 0; }
+
+        /* Note content view */
+        .note-view { display: none; }
+        .note-view.active { display: block; }
+        .note-back {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .note-back:hover { color: #111; }
+        .note-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        .note-view h2 {
+            font-size: 1.3em;
+            font-weight: normal;
+            margin-bottom: 16px;
+        }
+        .note-body { line-height: 1.7; }
+        .note-body h1, .note-body h2, .note-body h3 { margin: 1.2em 0 0.5em; font-size: 1.1em; }
+        .note-body p { margin: 0.5em 0; }
+        .note-body ul, .note-body ol { margin: 0.5em 0; padding-left: 1.5em; }
+        .note-body pre {
+            background: #f5f5f5;
+            padding: 12px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            margin: 0.5em 0;
+            border-radius: 4px;
+        }
+        .note-body code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            font-size: 0.9em;
+            border-radius: 3px;
+        }
+        .note-body pre code { background: none; padding: 0; }
+
+        /* Empty / prompt state */
+        .prompt {
+            color: #999;
+            font-size: 1em;
+            padding-top: 40px;
+        }
+
+        .empty-state {
+            color: #999;
+            font-style: italic;
+            padding: 16px 0;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>100Devs Notes</h1>
-        <div class="back"><a href="https://levinelabs.co.il/anny.html">← Back to Anny</a></div>
-    </header>
 
-    <div class="filters">
-        <label>Lesson:</label>
-        <select id="lessonFilter">
-            <option value="">All lessons</option>
-        </select>
-        <label style="margin-left: 16px;">Contributor:</label>
-        <select id="contributorFilter">
-            <option value="">All contributors</option>
-        </select>
-        <label style="margin-left: 16px;">Content:</label>
-        <div class="tag-filters" id="tagFilters"></div>
+    <!-- Header: Anny photo + name + socials -->
+    <div class="page-header">
+        <img src="https://levinelabs.co.il/assets/annymaster.jpeg" alt="Anny Levine">
+        <div class="header-text">
+            <h1>ANNY</h1>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/annylevine/" target="_blank" title="LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <a href="https://instagram.com/levine_anny" target="_blank" title="Instagram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+                <a href="https://bsky.app/profile/annylev.bsky.social" target="_blank" title="Bluesky">
+                    <svg viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 01-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.204-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/></svg>
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div id="noteList"></div>
-    <div class="empty" id="empty" style="display: none;">No notes match your filters.</div>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-nav">
+                <a href="https://levinelabs.co.il/anny.html">100devs</a>
+                <span class="sep">|</span>
+                <a href="#" class="active">our notes</a>
+            </div>
 
-    <div class="note-content" id="noteContent"></div>
+            <div class="sidebar-section">
+                <h3>filters</h3>
+                <div class="tag-filters" id="tagFilters"></div>
+            </div>
 
-    <script>
-        let notes = [];
-        let selectedLesson = '';
-        let selectedContributor = '';
-        let selectedTags = new Set();
+            <div class="sidebar-section">
+                <h3>writers</h3>
+                <ul class="writer-list" id="writerList"></ul>
+            </div>
+        </aside>
 
-        async function load() {
-            const res = await fetch('index.json');
-            notes = await res.json();
-            render();
+        <!-- Main content area -->
+        <div class="main" id="mainContent">
+            <div class="prompt" id="promptState">Select a writer to view their notes.</div>
+
+            <div class="writer-view" id="writerView" style="display:none;">
+                <h2 id="writerName"></h2>
+                <ul class="date-list" id="dateList"></ul>
+                <div class="empty-state" id="emptyDates" style="display:none;">No notes match the current filters.</div>
+            </div>
+
+            <div class="note-view" id="noteView">
+                <a class="note-back" id="noteBack">← back to dates</a>
+                <div class="note-meta" id="noteMeta"></div>
+                <div class="note-body" id="noteBody"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let notes = [];
+    let selectedTags = new Set();
+    let selectedWriter = null;
+
+    async function load() {
+        const res = await fetch('index.json');
+        notes = await res.json();
+        buildSidebar();
+    }
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function getWriters() {
+        const map = {};
+        notes.forEach(n => {
+            if (!map[n.author]) map[n.author] = 0;
+            map[n.author]++;
+        });
+        return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+    }
+
+    function getTags() {
+        const s = new Set();
+        notes.forEach(n => n.tags.forEach(t => s.add(t)));
+        return [...s].sort();
+    }
+
+    function getWriterNotes(author) {
+        return notes
+            .filter(n => n.author === author)
+            .filter(n => selectedTags.size === 0 || n.tags.some(t => selectedTags.has(t)))
+            .sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    function buildSidebar() {
+        const tags = getTags();
+        const tagEl = document.getElementById('tagFilters');
+        tagEl.innerHTML = tags.map(t =>
+            '<button type="button" data-tag="' + t + '">' + escapeHtml(t) + '</button>'
+        ).join('');
+        tagEl.querySelectorAll('button').forEach(btn => {
+            btn.onclick = function() {
+                var tag = btn.dataset.tag;
+                if (selectedTags.has(tag)) selectedTags.delete(tag);
+                else selectedTags.add(tag);
+                btn.classList.toggle('active');
+                updateWriterCounts();
+                if (selectedWriter) showWriter(selectedWriter);
+            };
+        });
+        updateWriterCounts();
+    }
+
+    function updateWriterCounts() {
+        var writers = getWriters();
+        var listEl = document.getElementById('writerList');
+        listEl.innerHTML = writers.map(function(w) {
+            var author = w[0];
+            var filtered = getWriterNotes(author);
+            var cls = selectedWriter === author ? 'active' : '';
+            if (filtered.length === 0 && selectedTags.size > 0) cls += ' dimmed';
+            return '<li class="' + cls + '" data-author="' + escapeHtml(author) + '">'
+                + escapeHtml(author)
+                + '<span class="note-count">(' + filtered.length + ')</span>'
+                + '</li>';
+        }).join('');
+        listEl.querySelectorAll('li').forEach(function(li) {
+            li.onclick = function() { showWriter(li.dataset.author); };
+        });
+    }
+
+    function showWriter(author) {
+        selectedWriter = author;
+        updateWriterCounts();
+
+        document.getElementById('promptState').style.display = 'none';
+        document.getElementById('noteView').classList.remove('active');
+        var wv = document.getElementById('writerView');
+        wv.style.display = '';
+
+        document.getElementById('writerName').textContent = author;
+
+        var filtered = getWriterNotes(author);
+        var dateEl = document.getElementById('dateList');
+        var emptyEl = document.getElementById('emptyDates');
+
+        if (filtered.length === 0) {
+            dateEl.innerHTML = '';
+            emptyEl.style.display = '';
+            return;
         }
+        emptyEl.style.display = 'none';
 
-        function getLessons() {
-            const lessons = [...new Set(notes.map(n => n.lesson))].filter(Boolean).sort((a, b) => a - b);
-            return lessons;
-        }
+        dateEl.innerHTML = filtered.map(function(n) {
+            var tagsHtml = n.tags.filter(function(t) { return t !== 'the-hunt'; }).map(function(t) {
+                return '<span class="tag">' + escapeHtml(t) + '</span>';
+            }).join('');
+            return '<li data-slug="' + n.slug + '">'
+                + '<span class="date-label">' + n.date + '</span>'
+                + '<span class="date-tags">' + tagsHtml + '</span>'
+                + '</li>';
+        }).join('');
 
-        function getContributors() {
-            const contributors = [...new Set(notes.map(n => n.author))].filter(Boolean).sort();
-            return contributors;
-        }
+        dateEl.querySelectorAll('li').forEach(function(li) {
+            li.onclick = function() { showNote(li.dataset.slug); };
+        });
+    }
 
-        function getTags() {
-            const tags = new Set();
-            notes.forEach(n => n.tags.forEach(t => tags.add(t)));
-            return [...tags].sort();
-        }
+    function showNote(slug) {
+        var note = notes.find(function(n) { return n.slug === slug; });
+        if (!note) return;
 
-        function filteredNotes() {
-            return notes.filter(n => {
-                if (selectedLesson && n.lesson !== parseInt(selectedLesson, 10)) return false;
-                if (selectedContributor && n.author !== selectedContributor) return false;
-                if (selectedTags.size && !n.tags.some(t => selectedTags.has(t))) return false;
-                return true;
-            });
-        }
+        document.getElementById('writerView').style.display = 'none';
+        var nv = document.getElementById('noteView');
+        nv.classList.add('active');
 
-        function groupByContributor(filtered) {
-            const groups = {};
-            filtered.forEach(n => {
-                if (!groups[n.author]) groups[n.author] = [];
-                groups[n.author].push(n);
-            });
-            return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
-        }
+        document.getElementById('noteMeta').textContent = note.author + ' · ' + note.date
+            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
+        document.getElementById('noteBody').innerHTML = note.html;
+        document.getElementById('noteBack').onclick = function(e) {
+            e.preventDefault();
+            nv.classList.remove('active');
+            showWriter(note.author);
+        };
 
-        function render() {
-            const lessons = getLessons();
-            const contributors = getContributors();
-            const tags = getTags();
-            const filtered = filteredNotes();
+        document.querySelector('.main').scrollTop = 0;
+    }
 
-            const lessonSelect = document.getElementById('lessonFilter');
-            lessonSelect.innerHTML = '<option value="">All lessons</option>' +
-                lessons.map(l => `<option value="${l}" ${selectedLesson === String(l) ? 'selected' : ''}>Lesson ${l}</option>`).join('');
+    load();
+</script>
 
-            const contributorSelect = document.getElementById('contributorFilter');
-            contributorSelect.innerHTML = '<option value="">All contributors</option>' +
-                contributors.map(c => `<option value="${escapeHtml(c)}" ${selectedContributor === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
-
-            const tagFilters = document.getElementById('tagFilters');
-            tagFilters.innerHTML = tags.map(t => 
-                `<button type="button" class="${selectedTags.has(t) ? 'active' : ''}" data-tag="${t}">${t}</button>`
-            ).join('');
-
-            tagFilters.querySelectorAll('button').forEach(btn => {
-                btn.onclick = () => {
-                    if (selectedTags.has(btn.dataset.tag)) selectedTags.delete(btn.dataset.tag);
-                    else selectedTags.add(btn.dataset.tag);
-                    render();
-                };
-            });
-
-            lessonSelect.onchange = () => { selectedLesson = lessonSelect.value; render(); };
-            contributorSelect.onchange = () => { selectedContributor = contributorSelect.value; render(); };
-
-            const list = document.getElementById('noteList');
-            const empty = document.getElementById('empty');
-            const content = document.getElementById('noteContent');
-
-            if (filtered.length === 0) {
-                list.innerHTML = '';
-                empty.style.display = 'block';
-                content.classList.remove('active');
-                content.innerHTML = '';
-            } else {
-                empty.style.display = 'none';
-                const groups = groupByContributor(filtered);
-                list.innerHTML = groups.map(([author, authorNotes]) => `
-                    <div class="contributor-group">
-                        <h3>${escapeHtml(author)}</h3>
-                        <ul class="note-list contributor-notes">
-                            ${authorNotes.map(n => `
-                                <li data-slug="${n.slug}">
-                                    <strong>Lesson ${n.lesson}: ${escapeHtml(n.title)}</strong>
-                                    <div class="meta">${n.date}</div>
-                                    ${n.tags.length ? `<div class="tags">${n.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `).join('');
-
-                list.querySelectorAll('li').forEach(li => {
-                    li.onclick = () => showNote(li.dataset.slug);
-                });
-            }
-        }
-
-        function showNote(slug) {
-            const note = notes.find(n => n.slug === slug);
-            if (!note) return;
-            const content = document.getElementById('noteContent');
-            content.innerHTML = `
-                <div class="meta">Lesson ${note.lesson} · ${escapeHtml(note.author)} · ${note.date}</div>
-                <h2>${escapeHtml(note.title)}</h2>
-                <div class="body">${note.html}</div>
-            `;
-            content.classList.add('active');
-            content.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function escapeHtml(s) {
-            const div = document.createElement('div');
-            div.textContent = s;
-            return div.innerHTML;
-        }
-
-        load();
-    </script>
 </body>
 </html>

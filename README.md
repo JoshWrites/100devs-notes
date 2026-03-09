@@ -24,7 +24,7 @@ notes/
     2026-03-09.md      <-- your note goes here
 ```
 
-When a PR is merged to `main`, a GitHub Action builds the markdown into HTML and deploys it to the live site. Your notes show up within minutes.
+When a PR is merged to `main`, a GitHub Action rebuilds `index.json` and commits it to the repo. The viewer at [levinelabs.co.il/100devs/notes/](https://levinelabs.co.il/100devs/notes/) fetches `index.json` directly from this public repo at page load — no server deployment, no storage outside of git. Your notes show up within minutes.
 
 ---
 

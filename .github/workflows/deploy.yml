@@ -1,11 +1,15 @@
-name: Build and Deploy
+name: Build index.json
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'notes/**'
+      - 'scripts/build.js'
+      - 'viewer.html'
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,14 +24,11 @@ jobs:
         run: |
           npm ci
           npm run build
+          cp dist/index.json index.json
 
-      - name: Deploy data to server
-        uses: easingthemes/ssh-deploy@v4
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
-          REMOTE_HOST: ${{ secrets.NOTES_DEPLOY_HOST }}
-          REMOTE_USER: ${{ secrets.NOTES_DEPLOY_USER }}
-          REMOTE_PATH: ${{ secrets.NOTES_DEPLOY_PATH }}data/
-          SOURCE: "dist/"
-        with:
-          args: "-avz --delete"
+      - name: Commit index.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git diff --cached --quiet && echo "No changes" || git commit -m "Rebuild index.json [skip ci]" && git push

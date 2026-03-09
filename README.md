@@ -4,6 +4,8 @@ Community-maintained archive of notes from the [100Devs](https://100devs.org/abo
 
 **Repo:** [github.com/JoshWrites/100devs-notes](https://github.com/JoshWrites/100devs-notes)
 
+**This repo is open to the entire 100Devs community. Contributions are encouraged!** If you take notes during a huddle, submit them here so everyone can benefit. PRs are reviewed and merged by [@Nili-L](https://github.com/Nili-L).
+
 ---
 
 ## How It Works
@@ -98,7 +100,7 @@ git commit -m "Add huddle notes for 2026-03-09"
 git push -u origin HEAD
 ```
 
-Then open a Pull Request on GitHub. A maintainer will review and merge it.
+Then open a Pull Request on GitHub. [@Nili-L](https://github.com/Nili-L) reviews and merges PRs — turnaround is usually quick.
 
 ---
 
@@ -169,6 +171,13 @@ contributors.json       Git username → display name mapping
 ---
 
 ## For Maintainers
+
+PRs are reviewed by [@Nili-L](https://github.com/Nili-L). When reviewing a note PR, check that:
+
+- The file is in the right place: `notes/{author-slug}/YYYY-MM-DD.md`
+- Frontmatter has `tags`, `author`, and `date`
+- Tags are from the approved list (or the PR proposes a new one with justification)
+- The note has actual content (not a placeholder or empty file)
 
 ### Re-tagging
 

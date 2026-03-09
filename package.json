@@ -10,11 +10,16 @@
     "coda:status": "node scripts/crawl-coda.js status",
     "coda:list": "node scripts/crawl-coda.js list",
     "reorganize": "node scripts/reorganize-by-author.js",
-    "retag": "node scripts/retag-notes.js"
+    "retag": "node scripts/retag-notes.js",
+    "recrawl": "CODA_HEADED=1 node scripts/recrawl-formatted.js",
+    "recrawl:errors": "CODA_HEADED=1 node scripts/recrawl-formatted.js --errors"
   },
   "devDependencies": {
     "js-yaml": "^4.1.1",
     "marked": "^12.0.0",
     "puppeteer": "^24.15.0"
+  },
+  "dependencies": {
+    "turndown": "^7.2.2"
   }
 }

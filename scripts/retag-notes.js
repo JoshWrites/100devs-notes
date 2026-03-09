@@ -39,7 +39,9 @@ const TAG_RULES = [
       'linkedin profile', 'connect with', 'warm intro',
       'reach out', 'building connections', 'professional network',
       'informational interview', 'meetup', 'tech event',
-      'discord community', 'follow up with', 'connection request'
+      'discord community', 'follow up with', 'connection request',
+      'referral', 'referred', 'introduce yourself',
+      'know someone', 'who you know', 'make connections'
     ],
     weight: 2
   },
@@ -48,9 +50,11 @@ const TAG_RULES = [
     keywords: [
       'interview', 'behavioral question', 'star method',
       'technical interview', 'whiteboard', 'coding challenge',
-      'take-home', 'mock interview', 'recruiter call',
+      'take-home', 'take home', 'mock interview', 'recruiter call',
       'phone screen', 'hiring manager', 'interview prep',
-      'answer question', 'tell me about yourself'
+      'answer question', 'tell me about yourself',
+      'leetcode', 'hackerrank', 'algo ', 'algorithm',
+      'system design', 'pair programming'
     ],
     weight: 2
   },
@@ -60,7 +64,9 @@ const TAG_RULES = [
       'resume', 'cv ', 'cover letter', 'application',
       'job board', 'apply', 'applying', 'applied',
       'ats ', 'applicant tracking', 'job posting',
-      'tailor your resume', 'work experience'
+      'tailor your resume', 'work experience',
+      'job description', 'job listing', 'wellfound', 'indeed',
+      'hired', 'hiring'
     ],
     weight: 2
   },
@@ -68,9 +74,10 @@ const TAG_RULES = [
     tag: 'freelance',
     keywords: [
       'freelance', 'freelancing', 'client', 'evergreen client',
-      'agency', 'contract', 'invoice', 'upwork', 'fiverr',
+      'agency', 'contract work', 'invoice', 'upwork', 'fiverr',
       'retainer', 'proposal', 'scope of work', 'pricing',
-      'side project', 'side hustle'
+      'side hustle', 'gig ', 'subcontract',
+      'web design business', 'charge per', 'per hour'
     ],
     weight: 2
   },
@@ -79,8 +86,24 @@ const TAG_RULES = [
     keywords: [
       'portfolio', '100 hours', '100hours', 'hundred hours',
       'project showcase', 'personal site', 'personal website',
-      'github profile', 'deploy', 'show off', 'case study',
-      'capstone', 'final project'
+      'github profile', 'deploy', 'case study',
+      'capstone', 'final project', 'open source', 'open-source',
+      'contributing', 'contribution', 'maintainer',
+      'ship it', 'shipped', 'built a', 'build a project',
+      'side project', 'show off your', 'proof of work'
+    ],
+    weight: 2
+  },
+  {
+    tag: 'branding',
+    keywords: [
+      'social media', 'personal brand', 'content creat',
+      'blog post', 'blogging', 'twitter', 'x.com',
+      'bluesky', 'post about', 'posting on', 'online presence',
+      'thought leader', 'visibility', 'audience',
+      'share your', 'sharing your', 'write about',
+      'dev.to', 'hashnode', 'medium', 'newsletter',
+      'youtube', 'tiktok', 'threads'
     ],
     weight: 2
   },
@@ -93,7 +116,9 @@ const TAG_RULES = [
       'don\'t give up', 'believe in yourself', 'proof list',
       'celebrate wins', 'accountability', 'discipline',
       'procrastinat', 'overwhelm', 'anxiety', 'stress',
-      'comparison', 'patience'
+      'comparison', 'patience', 'upward mobility',
+      'fight for yourself', 'don\'t quit', 'consistency',
+      'trust the process', 'celebrate', 'small wins'
     ],
     weight: 2
   },
@@ -103,7 +128,9 @@ const TAG_RULES = [
       'salary', 'negotiat', 'compensation', 'offer letter',
       'equity', 'stock option', 'benefits', 'base pay',
       'total comp', 'counter offer', 'pay range', 'market rate',
-      'glassdoor', 'levels.fyi'
+      'glassdoor', 'levels.fyi', 'raise', 'promotion',
+      'pay raise', 'signing bonus', 'bonus',
+      'how much', 'worth ', 'underpaid'
     ],
     weight: 2
   },
@@ -117,7 +144,9 @@ const TAG_RULES = [
       'data structure', 'leetcode', 'hackerrank',
       'code review', 'debugging', 'testing', 'unit test',
       'full stack', 'fullstack', 'frontend', 'backend',
-      'web development', 'coding bootcamp'
+      'web development', 'coding bootcamp',
+      'next.js', 'vue', 'angular', 'tailwind', 'sass',
+      'rest api', 'graphql', 'webpack', 'vite'
     ],
     weight: 1
   }

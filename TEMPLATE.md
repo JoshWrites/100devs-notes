@@ -1,31 +1,25 @@
 ---
-lesson: 1
 tags:
-  - css
-  - js
   - the-hunt
 author: Your Name
 date: YYYY-MM-DD
 ---
 
-# Lesson X: [Topic]
+Your huddle notes go here. Use markdown formatting freely:
 
-## Key Takeaways
+**Bold** for emphasis, *italics* for asides, [links](https://example.com) for resources.
 
-- Point 1
-- Point 2
-- Point 3
+- Bullet lists for key points
+- Numbered lists for steps
 
-## Notes
+### Use headings to organize sections
 
-Your notes here. Use markdown for formatting.
-
-### Code Examples
+> Blockquotes work well for direct quotes from Leon or other speakers
 
 ```javascript
-// Example code
+// Code blocks for any code examples discussed
 ```
 
 ## Resources
 
-- [Link to resource](url)
+- [Link to resource mentioned](https://example.com)

@@ -1,38 +1,208 @@
-# 100Devs Notes
+# 100Devs Huddle Notes
 
-Community notes from 100Devs, collected and shared via git. This repo is **only** for 100Devs notes.
+Community-maintained archive of notes from the [100Devs](https://100devs.org/about/) Huddle sessions, hosted via git and served at **[levinelabs.co.il/100devs/notes/](https://levinelabs.co.il/100devs/notes/)**.
 
-**Repo:** https://github.com/JoshWrites/100devs-notes  
-**Live at:** https://levinelabs.co.il/100devs/notes/ (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md))
+**Repo:** [github.com/JoshWrites/100devs-notes](https://github.com/JoshWrites/100devs-notes)
 
-> This setup may be reused as a template for other notes pages (e.g., different projects or communities).
+---
 
-## Contributing
+## How It Works
 
-1. **Fork** this repo
-2. **Copy** `TEMPLATE.md` to `notes/{your-slug}/YYYY-MM-DD.md` (e.g. `notes/annylevine/2026-03-09.md`)
-3. **Fill in** the frontmatter:
-   - `lesson`: Lesson number (integer)
-   - `tags`: Content tags — use `css`, `js`, `the-hunt` (add others as needed)
-   - `author`: Your name
-   - `date`: YYYY-MM-DD
-4. **Write** your notes in the body
-5. **Open a Pull Request**
+Notes live as markdown files in the `notes/` directory, organized by author:
 
-Labels can be applied when you submit (in the PR) or by the repo manager during review. Once merged to `main`, notes appear on the site within a few minutes.
+```
+notes/
+  annylevine/
+    2026-02-24.md
+    2026-02-20.md
+  michaelgovaerts/
+    2026-02-27.md
+    2026-02-24.md
+  yourname/
+    2026-03-09.md      <-- your note goes here
+```
 
-## Labels / Tags
+When a PR is merged to `main`, a GitHub Action builds the markdown into HTML and deploys it to the live site. Your notes show up within minutes.
 
-- `css` — CSS-related content
-- `js` — JavaScript-related content  
-- `the-hunt` — The Hunt (job search) content
+---
 
-Add new tags in the frontmatter as the curriculum evolves.
+## Contributing a Note
 
-## Template
+### 1. Fork and clone
 
-See [TEMPLATE.md](TEMPLATE.md) for the note structure.
+```bash
+git clone https://github.com/<your-username>/100devs-notes.git
+cd 100devs-notes
+```
 
-## Coda Migration
+### 2. Create your author folder (first time only)
 
-Notes are migrated from Coda via browser snapshot parsing. See [docs/CODA_MIGRATION.md](docs/CODA_MIGRATION.md) for the automated workflow (Cursor agent + scripts).
+Your folder name should be **lowercase, no spaces, letters and numbers only**. Use your name, handle, or however you're known in the community.
+
+```bash
+mkdir -p notes/yourname
+```
+
+### 3. Create your note file
+
+File name = the huddle date in `YYYY-MM-DD.md` format:
+
+```bash
+cp TEMPLATE.md notes/yourname/2026-03-09.md
+```
+
+### 4. Write your note
+
+Open the file and fill in the **frontmatter** (the YAML block at the top) and the **body** (your actual notes):
+
+```markdown
+---
+tags:
+  - the-hunt
+  - networking
+  - resume
+author: Your Name
+date: 2026-03-09
+---
+
+Your notes go here. Use markdown formatting:
+
+**Bold** for emphasis, [links](https://example.com) for resources,
+- bullet lists for key points
+- code blocks for examples
+
+### Subheadings to organize sections
+```
+
+#### Frontmatter fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `tags` | Yes | Content tags from the list below (1-4 tags) |
+| `author` | Yes | Your name, as you want it displayed on the site |
+| `date` | Yes | Huddle date in `YYYY-MM-DD` format |
+
+#### Writing tips
+
+- **Use markdown formatting.** Headers, bold, links, lists, and code blocks all render on the site. Don't just paste a wall of text.
+- **Include links** when referencing resources, tools, or sites mentioned in the huddle.
+- **Attribute quotes.** If you're quoting Leon or another community member, make it clear.
+- **It doesn't have to be perfect.** Rushed notes are better than no notes. You can always submit a follow-up PR to clean things up.
+
+### 5. Commit and open a PR
+
+```bash
+git checkout -b notes/yourname-2026-03-09
+git add notes/yourname/2026-03-09.md
+git commit -m "Add huddle notes for 2026-03-09"
+git push -u origin HEAD
+```
+
+Then open a Pull Request on GitHub. A maintainer will review and merge it.
+
+---
+
+## Tags
+
+Every note should have **1 to 4 tags** from this list. Pick the ones that best match what was discussed in the huddle. All huddle notes should include `the-hunt` as a base tag.
+
+| Tag | Use when the huddle covers... |
+|-----|-------------------------------|
+| `the-hunt` | General job search topics (use on every huddle note) |
+| `resume` | Resumes, cover letters, applications, job boards, ATS |
+| `networking` | Coffee chats, cold outreach, LinkedIn, meetups, referrals |
+| `interview` | Interview prep, behavioral questions, STAR method, leetcode, whiteboarding, system design |
+| `freelance` | Freelancing, clients, proposals, pricing, contracts |
+| `salary` | Salary negotiation, compensation, raises, promotions, equity, benefits |
+| `technical` | JavaScript, CSS, HTML, React, Node.js, APIs, databases, deployment |
+| `portfolio` | Portfolio projects, 100 hours, open source, contributing, side projects |
+| `mindset` | Motivation, imposter syndrome, burnout, consistency, mental health |
+| `branding` | Social media strategy, personal brand, content creation, blogging, online presence |
+
+If a huddle covers a topic that doesn't fit any existing tag, mention it in your PR and we can add one.
+
+---
+
+## Building Locally
+
+To preview how your note will look on the site:
+
+```bash
+npm install
+npm run build
+```
+
+This generates `dist/index.json` and HTML files. You can serve them locally:
+
+```bash
+npx serve dist
+# or
+python3 -m http.server 8080 --directory dist
+```
+
+Then open `http://localhost:8080` in your browser.
+
+---
+
+## Repo Structure
+
+```
+notes/                  Markdown notes, organized by author
+  {author-slug}/
+    YYYY-MM-DD.md
+
+scripts/                Build and migration tooling
+  build.js              Builds markdown → HTML + index.json
+  retag-notes.js        Re-analyze and update tags across all notes
+  recrawl-formatted.js  Coda migration crawler (maintainers only)
+
+dist/                   Built output (gitignored, generated by build)
+  index.json            Note index consumed by the viewer
+  index.html            The notes viewer app
+  {author}/{date}.html  Individual note HTML files
+
+viewer.html             Source for the notes viewer UI
+TEMPLATE.md             Starter template for new notes
+contributors.json       Git username → display name mapping
+```
+
+---
+
+## For Maintainers
+
+### Re-tagging
+
+If the tag rules change or new tags are added, run the retagger across all notes:
+
+```bash
+node scripts/retag-notes.js --dry-run    # preview changes
+node scripts/retag-notes.js              # apply changes
+npm run build                            # rebuild
+```
+
+### Contributor name mapping
+
+If a contributor's git username doesn't match their preferred display name, add a mapping to `contributors.json`:
+
+```json
+{
+  "github-username": "Display Name"
+}
+```
+
+### Coda migration
+
+The initial notes were migrated from a [Coda document](https://coda.io/d/100Devs-Huddle-Notes_dRH5Faq2FwO). To re-crawl or pull new notes from Coda:
+
+```bash
+CODA_HEADED=1 node scripts/recrawl-formatted.js           # re-crawl all
+CODA_HEADED=1 node scripts/recrawl-formatted.js --errors   # only failed/missing
+```
+
+This runs a headed Puppeteer browser, so you can watch for CAPTCHAs or login prompts.
+
+---
+
+## License
+
+These notes are community-contributed summaries of public 100Devs huddle sessions. They are shared freely for educational purposes.

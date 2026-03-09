@@ -21,13 +21,13 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to server
+      - name: Deploy data to server
         uses: easingthemes/ssh-deploy@v4
         env:
           SSH_PRIVATE_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
           REMOTE_HOST: ${{ secrets.NOTES_DEPLOY_HOST }}
           REMOTE_USER: ${{ secrets.NOTES_DEPLOY_USER }}
-          REMOTE_PATH: ${{ secrets.NOTES_DEPLOY_PATH }}
+          REMOTE_PATH: ${{ secrets.NOTES_DEPLOY_PATH }}data/
           SOURCE: "dist/"
         with:
           args: "-avz --delete"

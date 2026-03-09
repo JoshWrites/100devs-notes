@@ -76,6 +76,9 @@ function build() {
   if (!fs.existsSync(NOTES_DIR)) {
     fs.mkdirSync(NOTES_DIR, { recursive: true });
   }
+  if (fs.existsSync(DIST_DIR)) {
+    fs.rmSync(DIST_DIR, { recursive: true, force: true });
+  }
   fs.mkdirSync(DIST_DIR, { recursive: true });
 
   const contributors = loadContributors();
@@ -126,9 +129,6 @@ function build() {
 
   index.sort((a, b) => a.lesson - b.lesson || a.slug.localeCompare(b.slug));
   fs.writeFileSync(path.join(DIST_DIR, 'index.json'), JSON.stringify(index), 'utf8');
-
-  const viewerHtml = fs.readFileSync(path.join(__dirname, '..', 'viewer.html'), 'utf8');
-  fs.writeFileSync(path.join(DIST_DIR, 'index.html'), viewerHtml, 'utf8');
 
   console.log(`Built ${index.length} notes to ${DIST_DIR}`);
 }

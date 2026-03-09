@@ -192,14 +192,43 @@
             transform: translateX(0);
             pointer-events: auto;
         }
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
         .date-drawer h3 {
             font-size: 0.8em;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: #888;
-            margin-bottom: 12px;
             font-weight: normal;
+            margin: 0;
         }
+        .drawer-close {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 2px;
+        }
+        .drawer-close span {
+            display: block;
+            height: 2px;
+            width: 18px;
+            background: #888;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        .drawer-close:hover span { background: #fff; }
         .date-drawer .drawer-list {
             list-style: none;
         }
@@ -340,7 +369,12 @@
 
         <!-- Date drawer (slides out from under sidebar) -->
         <div class="date-drawer" id="dateDrawer">
-            <h3 id="drawerTitle">dates</h3>
+            <div class="drawer-header">
+                <h3 id="drawerTitle">dates</h3>
+                <button class="drawer-close" id="drawerClose" aria-label="Close date list">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
             <ul class="drawer-list" id="drawerList"></ul>
         </div>
 
@@ -525,6 +559,7 @@
     }
 
     load();
+    document.getElementById('drawerClose').onclick = closeDrawer;
 </script>
 
 </body>

@@ -1,0 +1,33 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to server
+        uses: easingthemes/ssh-deploy@v4
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
+          REMOTE_HOST: ${{ secrets.NOTES_DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.NOTES_DEPLOY_USER }}
+          REMOTE_PATH: ${{ secrets.NOTES_DEPLOY_PATH }}
+          SOURCE: "dist/"
+        with:
+          args: "-avz --delete"

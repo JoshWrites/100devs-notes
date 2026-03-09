@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100Devs Notes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            background: #fff;
+            color: #111;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #ddd;
+        }
+        h1 { font-size: 1.75em; font-weight: normal; }
+        .back { margin-top: 8px; }
+        .back a { color: #666; text-decoration: none; }
+        .back a:hover { color: #111; }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .filters label { font-size: 0.9em; color: #666; }
+        select {
+            padding: 6px 10px;
+            font-size: 0.95em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+        }
+        .tag-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tag-filters button {
+            padding: 6px 12px;
+            font-size: 0.9em;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tag-filters button:hover, .tag-filters button.active {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+        }
+        .note-list { list-style: none; }
+        .note-list li {
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .note-list li:hover { background: #f8f8f8; }
+        .note-list .meta {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 4px;
+        }
+        .note-list .tags { margin-top: 6px; }
+        .note-list .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.75em;
+            background: #eee;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .contributor-group {
+            margin-bottom: 24px;
+        }
+        .contributor-group h3 {
+            font-size: 1.1em;
+            font-weight: normal;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #ddd;
+            color: #333;
+        }
+        .contributor-group .contributor-notes {
+            padding-left: 12px;
+        }
+        .note-content {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #ddd;
+        }
+        .note-content.active { display: block; }
+        .note-content h2, .note-content h3 { margin: 1em 0 0.5em; font-size: 1.1em; }
+        .note-content p { margin: 0.5em 0; }
+        .note-content ul, .note-content ol { margin: 0.5em 0; padding-left: 1.5em; }
+        .note-content pre { background: #f5f5f5; padding: 12px; overflow-x: auto; font-size: 0.9em; margin: 0.5em 0; border-radius: 4px; }
+        .note-content code { background: #f5f5f5; padding: 2px 6px; font-size: 0.9em; border-radius: 3px; }
+        .note-content pre code { background: none; padding: 0; }
+        .note-content .meta { color: #666; font-size: 0.9em; margin-bottom: 16px; }
+        .empty { color: #666; font-style: italic; padding: 24px 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>100Devs Notes</h1>
+        <div class="back"><a href="https://levinelabs.co.il/anny.html">← Back to Anny</a></div>
+    </header>
+
+    <div class="filters">
+        <label>Lesson:</label>
+        <select id="lessonFilter">
+            <option value="">All lessons</option>
+        </select>
+        <label style="margin-left: 16px;">Contributor:</label>
+        <select id="contributorFilter">
+            <option value="">All contributors</option>
+        </select>
+        <label style="margin-left: 16px;">Content:</label>
+        <div class="tag-filters" id="tagFilters"></div>
+    </div>
+
+    <div id="noteList"></div>
+    <div class="empty" id="empty" style="display: none;">No notes match your filters.</div>
+
+    <div class="note-content" id="noteContent"></div>
+
+    <script>
+        let notes = [];
+        let selectedLesson = '';
+        let selectedContributor = '';
+        let selectedTags = new Set();
+
+        async function load() {
+            const res = await fetch('index.json');
+            notes = await res.json();
+            render();
+        }
+
+        function getLessons() {
+            const lessons = [...new Set(notes.map(n => n.lesson))].filter(Boolean).sort((a, b) => a - b);
+            return lessons;
+        }
+
+        function getContributors() {
+            const contributors = [...new Set(notes.map(n => n.author))].filter(Boolean).sort();
+            return contributors;
+        }
+
+        function getTags() {
+            const tags = new Set();
+            notes.forEach(n => n.tags.forEach(t => tags.add(t)));
+            return [...tags].sort();
+        }
+
+        function filteredNotes() {
+            return notes.filter(n => {
+                if (selectedLesson && n.lesson !== parseInt(selectedLesson, 10)) return false;
+                if (selectedContributor && n.author !== selectedContributor) return false;
+                if (selectedTags.size && !n.tags.some(t => selectedTags.has(t))) return false;
+                return true;
+            });
+        }
+
+        function groupByContributor(filtered) {
+            const groups = {};
+            filtered.forEach(n => {
+                if (!groups[n.author]) groups[n.author] = [];
+                groups[n.author].push(n);
+            });
+            return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+        }
+
+        function render() {
+            const lessons = getLessons();
+            const contributors = getContributors();
+            const tags = getTags();
+            const filtered = filteredNotes();
+
+            const lessonSelect = document.getElementById('lessonFilter');
+            lessonSelect.innerHTML = '<option value="">All lessons</option>' +
+                lessons.map(l => `<option value="${l}" ${selectedLesson === String(l) ? 'selected' : ''}>Lesson ${l}</option>`).join('');
+
+            const contributorSelect = document.getElementById('contributorFilter');
+            contributorSelect.innerHTML = '<option value="">All contributors</option>' +
+                contributors.map(c => `<option value="${escapeHtml(c)}" ${selectedContributor === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
+
+            const tagFilters = document.getElementById('tagFilters');
+            tagFilters.innerHTML = tags.map(t => 
+                `<button type="button" class="${selectedTags.has(t) ? 'active' : ''}" data-tag="${t}">${t}</button>`
+            ).join('');
+
+            tagFilters.querySelectorAll('button').forEach(btn => {
+                btn.onclick = () => {
+                    if (selectedTags.has(btn.dataset.tag)) selectedTags.delete(btn.dataset.tag);
+                    else selectedTags.add(btn.dataset.tag);
+                    render();
+                };
+            });
+
+            lessonSelect.onchange = () => { selectedLesson = lessonSelect.value; render(); };
+            contributorSelect.onchange = () => { selectedContributor = contributorSelect.value; render(); };
+
+            const list = document.getElementById('noteList');
+            const empty = document.getElementById('empty');
+            const content = document.getElementById('noteContent');
+
+            if (filtered.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                content.classList.remove('active');
+                content.innerHTML = '';
+            } else {
+                empty.style.display = 'none';
+                const groups = groupByContributor(filtered);
+                list.innerHTML = groups.map(([author, authorNotes]) => `
+                    <div class="contributor-group">
+                        <h3>${escapeHtml(author)}</h3>
+                        <ul class="note-list contributor-notes">
+                            ${authorNotes.map(n => `
+                                <li data-slug="${n.slug}">
+                                    <strong>Lesson ${n.lesson}: ${escapeHtml(n.title)}</strong>
+                                    <div class="meta">${n.date}</div>
+                                    ${n.tags.length ? `<div class="tags">${n.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+
+                list.querySelectorAll('li').forEach(li => {
+                    li.onclick = () => showNote(li.dataset.slug);
+                });
+            }
+        }
+
+        function showNote(slug) {
+            const note = notes.find(n => n.slug === slug);
+            if (!note) return;
+            const content = document.getElementById('noteContent');
+            content.innerHTML = `
+                <div class="meta">Lesson ${note.lesson} · ${escapeHtml(note.author)} · ${note.date}</div>
+                <h2>${escapeHtml(note.title)}</h2>
+                <div class="body">${note.html}</div>
+            `;
+            content.classList.add('active');
+            content.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        load();
+    </script>
+</body>
+</html>

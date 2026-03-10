@@ -328,6 +328,57 @@
             color: #c00;
             padding-top: 40px;
         }
+
+        /* Search input */
+        .search-wrap {
+            padding: 12px 16px 0;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 0.85em;
+            font-family: inherit;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 3px;
+            color: #fff;
+            outline: none;
+        }
+        .search-wrap input::placeholder { color: #666; }
+        .search-wrap input:focus { border-color: #888; }
+
+        /* Dimmed writer when no results */
+        .writer-list li.dimmed { opacity: 0.35; }
+
+        /* All-notes flat list */
+        .all-notes-list {
+            list-style: none;
+            max-width: 600px;
+        }
+        .all-notes-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .all-notes-list li:hover { background: #fafafa; }
+        .card-date {
+            font-size: 0.9em;
+            color: #555;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .card-author {
+            font-size: 0.95em;
+            color: #111;
+            font-weight: 500;
+        }
+        .card-tags {
+            font-size: 0.78em;
+            color: #999;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
@@ -359,6 +410,10 @@
                 <a href="https://levinelabs.co.il/anny.html">100devs</a>
                 <span class="sep">|</span>
                 <a href="#" class="active">our notes</a>
+            </div>
+
+            <div class="search-wrap">
+                <input type="search" id="searchInput" placeholder="search notes..." autocomplete="off">
             </div>
 
             <div class="sidebar-section">
@@ -393,6 +448,11 @@
                 <div class="empty-state" id="emptyDates" style="display:none;">No notes match the current filters.</div>
             </div>
 
+            <div class="all-notes-view" id="allNotesView" style="display:none;">
+                <ul class="all-notes-list" id="allNotesList"></ul>
+                <div class="empty-state" id="allNotesEmpty" style="display:none;">No notes match.</div>
+            </div>
+
             <div class="note-view" id="noteView">
                 <div class="note-header" id="noteHeader">
                     <button class="hamburger" id="noteHamburger" aria-label="Toggle date list">
@@ -409,7 +469,8 @@
 <script>
     let notes = [];
     let selectedTags = new Set();
-    let selectedWriter = null;
+    let selectedWriter = null; // null = none, '__all__' = all notes, string = specific writer
+    let searchQuery = '';
 
     async function load() {
         try {
@@ -427,6 +488,21 @@
         const d = document.createElement('div');
         d.textContent = s;
         return d.innerHTML;
+    }
+
+    function stripHtml(html) {
+        const d = document.createElement('div');
+        d.innerHTML = html;
+        return d.textContent || '';
+    }
+
+    function matchesSearch(note, query) {
+        if (!query) return true;
+        const q = query.toLowerCase();
+        return note.author.toLowerCase().includes(q)
+            || note.date.includes(q)
+            || note.tags.some(t => t.toLowerCase().includes(q))
+            || stripHtml(note.html).toLowerCase().includes(q);
     }
 
     function getWriters() {
@@ -448,6 +524,14 @@
         return notes
             .filter(n => n.author === author)
             .filter(n => selectedTags.size === 0 || n.tags.some(t => selectedTags.has(t)))
+            .filter(n => matchesSearch(n, searchQuery))
+            .sort((a, b) => b.date.localeCompare(a.date));
+    }
+
+    function getAllNotes() {
+        return notes
+            .filter(n => selectedTags.size === 0 || n.tags.some(t => selectedTags.has(t)))
+            .filter(n => matchesSearch(n, searchQuery))
             .sort((a, b) => b.date.localeCompare(a.date));
     }
 
@@ -464,27 +548,42 @@
                 else selectedTags.add(tag);
                 btn.classList.toggle('active');
                 updateWriterCounts();
-                if (selectedWriter) showWriter(selectedWriter);
+                if (selectedWriter === '__all__') showAllNotes();
+                else if (selectedWriter) showWriter(selectedWriter);
             };
         });
         updateWriterCounts();
     }
 
     function updateWriterCounts() {
+        var allFiltered = getAllNotes();
         var writers = getWriters();
         var listEl = document.getElementById('writerList');
-        listEl.innerHTML = writers.map(function(w) {
+        var hasActiveFilter = selectedTags.size > 0 || searchQuery;
+
+        var allCls = selectedWriter === '__all__' ? 'active' : '';
+        if (allFiltered.length === 0 && hasActiveFilter) allCls += ' dimmed';
+        var allItem = '<li class="' + allCls + '" data-author="__all__">'
+            + 'All notes'
+            + '<span class="note-count">(' + allFiltered.length + ')</span>'
+            + '</li>';
+
+        listEl.innerHTML = allItem + writers.map(function(w) {
             var author = w[0];
             var filtered = getWriterNotes(author);
             var cls = selectedWriter === author ? 'active' : '';
-            if (filtered.length === 0 && selectedTags.size > 0) cls += ' dimmed';
+            if (filtered.length === 0 && hasActiveFilter) cls += ' dimmed';
             return '<li class="' + cls + '" data-author="' + escapeHtml(author) + '">'
                 + escapeHtml(author)
                 + '<span class="note-count">(' + filtered.length + ')</span>'
                 + '</li>';
         }).join('');
+
         listEl.querySelectorAll('li').forEach(function(li) {
-            li.onclick = function() { showWriter(li.dataset.author); };
+            li.onclick = function() {
+                if (li.dataset.author === '__all__') showAllNotes();
+                else showWriter(li.dataset.author);
+            };
         });
     }
 
@@ -504,6 +603,40 @@
         });
     }
 
+    function showAllNotes() {
+        selectedWriter = '__all__';
+        updateWriterCounts();
+        closeDrawer();
+
+        document.getElementById('promptState').style.display = 'none';
+        document.getElementById('noteView').classList.remove('active');
+        document.getElementById('writerView').style.display = 'none';
+        var av = document.getElementById('allNotesView');
+        av.style.display = '';
+
+        var filtered = getAllNotes();
+        var listEl = document.getElementById('allNotesList');
+        var emptyEl = document.getElementById('allNotesEmpty');
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = '';
+            emptyEl.style.display = '';
+            return;
+        }
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = filtered.map(function(n) {
+            var extraTags = n.tags.filter(function(t) { return t !== 'the-hunt'; });
+            return '<li data-slug="' + n.slug + '">'
+                + '<span class="card-date">' + escapeHtml(n.date) + '</span>'
+                + '<span class="card-author">' + escapeHtml(n.author) + '</span>'
+                + (extraTags.length ? '<span class="card-tags">' + escapeHtml(extraTags.join(', ')) + '</span>' : '')
+                + '</li>';
+        }).join('');
+        listEl.querySelectorAll('li').forEach(function(li) {
+            li.onclick = function() { showNote(li.dataset.slug); };
+        });
+    }
+
     function showWriter(author) {
         selectedWriter = author;
         updateWriterCounts();
@@ -511,6 +644,7 @@
 
         document.getElementById('promptState').style.display = 'none';
         document.getElementById('noteView').classList.remove('active');
+        document.getElementById('allNotesView').style.display = 'none';
         var wv = document.getElementById('writerView');
         wv.style.display = '';
 
@@ -553,6 +687,7 @@
 
         closeDrawer();
         document.getElementById('writerView').style.display = 'none';
+        document.getElementById('allNotesView').style.display = 'none';
         var nv = document.getElementById('noteView');
         nv.classList.add('active');
 
@@ -571,6 +706,12 @@
 
     load();
     document.getElementById('drawerClose').onclick = closeDrawer;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        searchQuery = this.value.trim();
+        updateWriterCounts();
+        if (selectedWriter === '__all__') showAllNotes();
+        else if (selectedWriter) showWriter(selectedWriter);
+    });
 </script>
 
 </body>

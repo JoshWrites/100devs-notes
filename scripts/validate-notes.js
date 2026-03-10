@@ -103,6 +103,11 @@ for (const file of changedFiles) {
     errors++;
   }
 
+  if (fm.discord && !/^https?:\/\//.test(fm.discord)) {
+    console.error(`❌ ${file}: discord must be a valid http/https URL`);
+    errors++;
+  }
+
   const body = match[2].trim();
   if (body.length < 20) {
     console.error(`❌ ${file}: note body appears empty or too short`);

@@ -112,6 +112,7 @@ function build() {
       date: frontmatter.date ?? '',
       title: frontmatter.title || extractTitle(body) || slug,
       source: /^https?:\/\//.test(frontmatter.source || '') ? frontmatter.source : '',
+      discord: /^https?:\/\//.test(frontmatter.discord || '') ? frontmatter.discord : '',
       html
     };
     index.push(note);

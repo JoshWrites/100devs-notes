@@ -299,6 +299,29 @@
         }
         .note-meta a { color: #666; text-decoration: underline; }
         .note-meta a:hover { color: #111; }
+
+        /* Read All view */
+        .read-all-view { display: none; max-width: 720px; }
+        .read-all-note { margin-bottom: 56px; }
+        .read-all-note-header {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            border-bottom: 2px solid #111;
+            font-size: 0.88em;
+            color: #555;
+        }
+        .read-all-note-header strong { color: #111; font-size: 1.05em; }
+        .read-all-note-header a { color: #666; text-decoration: underline; }
+        .read-all-note-header a:hover { color: #111; }
+        .read-all-divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 48px 0;
+        }
         .note-view h2 {
             font-size: 1.3em;
             font-weight: normal;
@@ -721,7 +744,9 @@
             <div class="sidebar-nav">
                 <a href="https://levinelabs.co.il/anny.html">100devs</a>
                 <span class="sep">|</span>
-                <a href="javascript:void(0)" class="active">our notes</a>
+                <a href="javascript:void(0)" id="navNotes" class="active">notes</a>
+                <span class="sep">|</span>
+                <a href="javascript:void(0)" id="navReadAll">read all</a>
             </div>
 
             <div class="search-wrap">
@@ -760,6 +785,8 @@
                 <ul class="date-list" id="dateList"></ul>
                 <div class="empty-state" id="emptyDates" style="display:none;">No notes match the current filters.</div>
             </div>
+
+            <div class="read-all-view" id="readAllView"></div>
 
             <div class="all-notes-view" id="allNotesView" style="display:none;">
                 <ul class="all-notes-list" id="allNotesList"></ul>
@@ -920,7 +947,8 @@
                 else selectedTags.add(tag);
                 btn.classList.toggle('active');
                 updateWriterCounts();
-                if (selectedWriter === '__all__') showAllNotes();
+                if (selectedWriter === '__readall__') showReadAll();
+                else if (selectedWriter === '__all__') showAllNotes();
                 else if (selectedWriter) showWriter(selectedWriter);
             };
         });
@@ -959,6 +987,60 @@
         });
     }
 
+    function buildNoteMeta(note) {
+        var html = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>';
+        if (note.tags.length) html += ' · ' + escapeHtml(note.tags.join(', '));
+        if (note.source && /^https?:\/\//.test(note.source)) {
+            html += ' · <a href="' + escapeHtml(note.source) + '" target="_blank" rel="noopener noreferrer">source</a>';
+        }
+        if (note.discord && /^https?:\/\//.test(note.discord)) {
+            html += ' · <a href="' + escapeHtml(note.discord) + '" target="_blank" rel="noopener noreferrer">discord</a>';
+        }
+        return html;
+    }
+
+    function showReadAll() {
+        selectedWriter = '__readall__';
+        updateWriterCounts();
+        closeDrawer();
+        closeSidebar();
+
+        document.getElementById('promptState').style.display = 'none';
+        document.getElementById('noteView').classList.remove('active');
+        document.getElementById('writerView').style.display = 'none';
+        document.getElementById('allNotesView').style.display = 'none';
+
+        document.getElementById('navNotes').classList.remove('active');
+        document.getElementById('navReadAll').classList.add('active');
+
+        var filtered = getAllNotes();
+        var container = document.getElementById('readAllView');
+        container.style.display = '';
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p class="empty-state">No notes to display.</p>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(function(n, i) {
+            return '<div class="read-all-note">'
+                + '<div class="read-all-note-header">'
+                + '<strong>' + escapeHtml(n.author) + '</strong>'
+                + '<span>·</span>'
+                + '<span>' + escapeHtml(formatDate(n.date)) + '</span>'
+                + (n.tags.length ? '<span>· ' + escapeHtml(n.tags.join(', ')) + '</span>' : '')
+                + (n.source && /^https?:\/\//.test(n.source) ? ' · <a href="' + escapeHtml(n.source) + '" target="_blank" rel="noopener noreferrer">source</a>' : '')
+                + (n.discord && /^https?:\/\//.test(n.discord) ? ' · <a href="' + escapeHtml(n.discord) + '" target="_blank" rel="noopener noreferrer">discord</a>' : '')
+                + '</div>'
+                + '<div class="note-body">' + DOMPurify.sanitize(n.html) + '</div>'
+                + (i < filtered.length - 1 ? '<hr class="read-all-divider">' : '')
+                + '</div>';
+        }).join('');
+
+        setHash('');
+        updateMeta('Read All — 100Devs Notes', 'All huddle notes in one place.');
+    }
+
     function tagTooltip(n) {
         var visible = n.tags.filter(function(t) { return t !== 'the-hunt'; });
         return visible.length ? visible.join(', ') : '';
@@ -983,6 +1065,9 @@
         document.getElementById('promptState').style.display = 'none';
         document.getElementById('noteView').classList.remove('active');
         document.getElementById('writerView').style.display = 'none';
+        document.getElementById('readAllView').style.display = 'none';
+        document.getElementById('navNotes').classList.add('active');
+        document.getElementById('navReadAll').classList.remove('active');
         var av = document.getElementById('allNotesView');
         av.style.display = '';
 
@@ -1017,6 +1102,9 @@
         document.getElementById('promptState').style.display = 'none';
         document.getElementById('noteView').classList.remove('active');
         document.getElementById('allNotesView').style.display = 'none';
+        document.getElementById('readAllView').style.display = 'none';
+        document.getElementById('navNotes').classList.add('active');
+        document.getElementById('navReadAll').classList.remove('active');
         var wv = document.getElementById('writerView');
         wv.style.display = '';
 
@@ -1066,12 +1154,7 @@
         document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
         populateDrawer(note.author);
 
-        var sourceLink = (note.source && /^https?:\/\//.test(note.source))
-            ? ' · <a href="' + escapeHtml(note.source) + '" target="_blank" rel="noopener noreferrer">source</a>'
-            : '';
-        document.getElementById('noteMeta').innerHTML = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>'
-            + (note.tags.length ? ' · ' + escapeHtml(note.tags.join(', ')) : '')
-            + sourceLink;
+        document.getElementById('noteMeta').innerHTML = buildNoteMeta(note);
         document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
 
         document.getElementById('noteHamburger').onclick = toggleDrawer;
@@ -1145,9 +1228,15 @@
     document.getElementById('searchInput').addEventListener('input', function() {
         searchQuery = this.value.trim();
         updateWriterCounts();
-        if (selectedWriter === '__all__') showAllNotes();
+        if (selectedWriter === '__readall__') showReadAll();
+        else if (selectedWriter === '__all__') showAllNotes();
         else if (selectedWriter) showWriter(selectedWriter);
     });
+    document.getElementById('navReadAll').onclick = showReadAll;
+    document.getElementById('navNotes').onclick = function() {
+        if (selectedWriter !== '__readall__') return;
+        showAllNotes();
+    };
     document.getElementById('mobileMenuBtn').onclick = openSidebar;
     document.getElementById('sidebarOverlay').onclick = closeSidebar;
     window.addEventListener('hashchange', navigateToHash);

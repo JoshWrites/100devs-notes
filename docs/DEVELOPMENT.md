@@ -234,9 +234,14 @@ Generated automatically during `npm run build`. Sitemap is only generated when `
 SITE_URL=https://levinelabs.co.il/100devs/notes npm run build
 ```
 
-### Source URL attribution
+### Source URL and Discord attribution
 
-Notes can include an optional `source` field in their frontmatter linking to the original recording, document, or resource the note came from. When present, it appears as a clickable **source** link in the note meta line next to the date and tags.
+Notes support two optional link fields that appear in the note meta line next to the date and tags:
+
+| Field | Purpose |
+|---|---|
+| `source` | Link to the original recording, Google Doc, Pastebin, or any external resource |
+| `discord` | Link to the Discord message where the notes were posted |
 
 In a note file:
 ```yaml
@@ -246,14 +251,37 @@ tags:
   - networking
 author: Anny Levine
 date: 2024-05-21
-source: https://example.com/recording-link
+source: https://docs.google.com/...
+discord: https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID
 ---
 ```
 
+Both fields render as clickable links in the note meta line in the viewer, and in the Read All view header for each note.
+
 Rules:
-- Must be a valid `http://` or `https://` URL — anything else is rejected by the CI validator
-- Omitting the field entirely is fine; it's optional
-- The build script validates the URL and silently drops malformed values rather than failing the build
+- Both must be valid `http://` or `https://` URLs — the CI validator rejects anything else
+- Both are optional — omit them if not applicable
+- The build script validates URLs and silently drops malformed values rather than failing the build
+
+In `import/manifest.json`:
+```json
+{
+  "my-notes.rtf": {
+    "authorSlug": "annylevine",
+    "author": "Anny Levine",
+    "date": "2024-05-21",
+    "tags": ["the-hunt", "networking"],
+    "source": "https://docs.google.com/...",
+    "discord": "https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID"
+  }
+}
+```
+
+### Read All view
+
+A **read all** link in the sidebar nav loads every note body consecutively in a single scrollable page, sorted newest-first. Each note shows its author, date, tags, source, and Discord links as a header.
+
+This makes browser `Ctrl+F` work across the entire notes archive at once, and lets readers follow recurring advice or themes across multiple huddles over time. Tag filters and search also apply in Read All mode.
 
 ---
 
@@ -322,7 +350,8 @@ Edit `import/manifest.json` to map each source filename to its correct metadata:
     "author": "Anny Levine",
     "date": "2024-05-21",
     "tags": ["the-hunt", "networking"],
-    "source": "https://example.com/recording-link"
+    "source": "https://docs.google.com/...",
+    "discord": "https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID"
   },
   "june05-notes.docx": {
     "authorSlug": "michaelgovaerts",

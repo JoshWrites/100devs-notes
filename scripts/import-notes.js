@@ -150,6 +150,9 @@ function buildFrontmatter(meta) {
   if (meta.source && /^https?:\/\//.test(meta.source)) {
     lines.push('source: ' + meta.source);
   }
+  if (meta.discord && /^https?:\/\//.test(meta.discord)) {
+    lines.push('discord: ' + meta.discord);
+  }
   lines.push('---', '', '');
   return lines.join('\n');
 }

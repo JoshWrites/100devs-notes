@@ -439,6 +439,237 @@
             .page-header img { width: 44px; height: 44px; }
         }
 
+        /* Auth button */
+        .auth-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            font-family: inherit;
+            cursor: pointer;
+            color: #555;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .auth-btn:hover { border-color: #999; color: #111; }
+        .auth-btn.signed-in { border-color: #3a3; color: #3a3; }
+
+        /* Edit / New Note buttons */
+        .edit-note-btn {
+            display: none;
+            margin-left: auto;
+            background: none;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            padding: 3px 10px;
+            font-size: 0.8em;
+            font-family: inherit;
+            cursor: pointer;
+            color: #555;
+        }
+        .edit-note-btn:hover { border-color: #555; color: #111; }
+        .new-note-btn {
+            display: none;
+            margin: 8px 16px 16px;
+            padding: 7px 12px;
+            background: #fff;
+            color: #111;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: left;
+        }
+        .new-note-btn:hover { background: #eee; }
+
+        /* Editor overlay + panel */
+        .editor-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 50;
+        }
+        .editor-overlay.open { display: block; }
+        .editor-panel {
+            display: none;
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: min(640px, 100vw);
+            background: #fff;
+            z-index: 51;
+            flex-direction: column;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+        }
+        .editor-panel.open { display: flex; }
+        .editor-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .editor-panel-title {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .editor-tabs {
+            display: flex;
+            gap: 4px;
+        }
+        .editor-tabs button {
+            padding: 4px 12px;
+            font-size: 0.8em;
+            font-family: inherit;
+            border: 1px solid #ccc;
+            background: none;
+            border-radius: 3px;
+            cursor: pointer;
+            color: #555;
+        }
+        .editor-tabs button.active { background: #111; color: #fff; border-color: #111; }
+        .editor-format-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78em;
+            color: #888;
+            flex-shrink: 0;
+        }
+        .editor-format-toggle select {
+            font-size: 0.85em;
+            font-family: inherit;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 4px;
+            background: #fff;
+        }
+        .editor-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.3em;
+            cursor: pointer;
+            color: #888;
+            padding: 2px 6px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .editor-close-btn:hover { color: #111; }
+        .editor-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 12px 16px;
+            gap: 10px;
+        }
+        .editor-new-fields {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .editor-new-fields.open { display: flex; }
+        .editor-field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .editor-field label {
+            font-size: 0.75em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .editor-field input {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+        .editor-field input:focus { outline: none; border-color: #888; }
+        .editor-field .field-hint {
+            font-size: 0.72em;
+            color: #bbb;
+        }
+        .editor-write-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .editor-write-pane.hidden { display: none; }
+        .editor-textarea {
+            flex: 1;
+            resize: none;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 10px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: #111;
+            outline: none;
+        }
+        .editor-textarea:focus { border-color: #888; }
+        .editor-preview-pane {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 12px 16px;
+            display: none;
+            line-height: 1.7;
+            font-size: 0.95em;
+        }
+        .editor-preview-pane.active { display: block; }
+        .editor-preview-pane h1, .editor-preview-pane h2, .editor-preview-pane h3 { margin: 1em 0 0.4em; }
+        .editor-preview-pane p { margin: 0.5em 0; }
+        .editor-preview-pane ul, .editor-preview-pane ol { padding-left: 1.5em; margin: 0.5em 0; }
+        .editor-preview-pane pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .editor-preview-pane code { background: #f5f5f5; padding: 2px 5px; border-radius: 2px; }
+        .editor-footer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .editor-save-btn {
+            padding: 7px 18px;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .editor-save-btn:hover { background: #333; }
+        .editor-save-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .editor-status {
+            font-size: 0.82em;
+            color: #888;
+            flex: 1;
+        }
+        .editor-status.error { color: #c00; }
+        .editor-status.success { color: #3a3; }
+
         /* Print styles */
         @media print {
             html, body { height: auto; overflow: visible; }
@@ -451,10 +682,13 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown@7/dist/turndown.min.js"></script>
 </head>
 <body>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="editor-overlay" id="editorOverlay"></div>
 
     <!-- Header: Anny photo + name + socials -->
     <div class="page-header">
@@ -476,6 +710,7 @@
                 </a>
             </div>
         </div>
+        <button class="auth-btn" id="authBtn">sign in to edit</button>
     </div>
 
     <div class="layout">
@@ -500,6 +735,7 @@
                 <h3>writers</h3>
                 <ul class="writer-list" id="writerList"></ul>
             </div>
+            <button class="new-note-btn" id="newNoteBtn">+ new note</button>
         </aside>
 
         <!-- Date drawer (slides out from under sidebar) -->
@@ -534,12 +770,60 @@
                         <span></span><span></span><span></span>
                     </button>
                     <span class="note-header-label" id="noteHeaderLabel"></span>
+                    <button class="edit-note-btn" id="editNoteBtn">edit</button>
                 </div>
                 <div class="note-meta" id="noteMeta"></div>
                 <div class="note-body" id="noteBody"></div>
             </div>
         </div>
     </div>
+
+<!-- ── Editor panel ─────────────────────────────────────────── -->
+<div class="editor-panel" id="editorPanel">
+    <div class="editor-panel-header">
+        <span class="editor-panel-title" id="editorTitle">Edit note</span>
+        <div class="editor-tabs">
+            <button id="tabWrite" class="active" type="button">Write</button>
+            <button id="tabPreview" type="button">Preview</button>
+        </div>
+        <div class="editor-format-toggle">
+            <label for="editorFormat">format:</label>
+            <select id="editorFormat">
+                <option value="markdown">Markdown</option>
+                <option value="html">HTML</option>
+            </select>
+        </div>
+        <button class="editor-close-btn" id="editorCloseBtn" aria-label="Close editor">&times;</button>
+    </div>
+    <div class="editor-body">
+        <div class="editor-new-fields" id="editorNewFields">
+            <div class="editor-field">
+                <label>Author slug <span class="field-hint">(folder name, lowercase, no spaces)</span></label>
+                <input type="text" id="newAuthorSlug" placeholder="e.g. annylevine">
+            </div>
+            <div class="editor-field">
+                <label>Display name</label>
+                <input type="text" id="newAuthorName" placeholder="e.g. Anny Levine">
+            </div>
+            <div class="editor-field">
+                <label>Huddle date <span class="field-hint">(YYYY-MM-DD)</span></label>
+                <input type="date" id="newDate">
+            </div>
+            <div class="editor-field">
+                <label>Tags <span class="field-hint">(comma-separated, from approved list)</span></label>
+                <input type="text" id="newTags" placeholder="the-hunt, networking">
+            </div>
+        </div>
+        <div class="editor-write-pane" id="editorWritePane">
+            <textarea class="editor-textarea" id="editorTextarea" spellcheck="false" placeholder="Write your note in Markdown..."></textarea>
+        </div>
+        <div class="editor-preview-pane" id="editorPreviewPane"></div>
+    </div>
+    <div class="editor-footer">
+        <button class="editor-save-btn" id="editorSaveBtn">Save</button>
+        <span class="editor-status" id="editorStatus"></span>
+    </div>
+</div>
 
 <script>
     let notes = [];
@@ -857,6 +1141,276 @@
     document.getElementById('mobileMenuBtn').onclick = openSidebar;
     document.getElementById('sidebarOverlay').onclick = closeSidebar;
     window.addEventListener('hashchange', navigateToHash);
+
+    // ── Editor / Auth ─────────────────────────────────────────────
+
+    const REPO = 'JoshWrites/100devs-notes';
+    const BRANCH = 'main';
+
+    let ghToken = sessionStorage.getItem('gh_token') || '';
+    let ghUser = null;
+    let editorSlug = null;
+    let editorSha = null;
+    let editorTab = 'write'; // 'write' | 'preview'
+
+    function setEditorStatus(msg, type) {
+        var el = document.getElementById('editorStatus');
+        el.textContent = msg;
+        el.className = 'editor-status' + (type ? ' ' + type : '');
+    }
+
+    function updateAuthUI() {
+        var btn = document.getElementById('authBtn');
+        var editBtn = document.getElementById('editNoteBtn');
+        var newBtn = document.getElementById('newNoteBtn');
+        if (ghUser) {
+            btn.textContent = ghUser.login + ' · sign out';
+            btn.classList.add('signed-in');
+            btn.onclick = signOut;
+            editBtn.style.display = '';
+            newBtn.style.display = '';
+        } else {
+            btn.textContent = 'sign in to edit';
+            btn.classList.remove('signed-in');
+            btn.onclick = signIn;
+            editBtn.style.display = 'none';
+            newBtn.style.display = 'none';
+        }
+    }
+
+    async function signIn() {
+        var token = prompt('Enter your GitHub Personal Access Token\n(needs "repo" scope for write access):');
+        if (!token || !token.trim()) return;
+        token = token.trim();
+        try {
+            var res = await fetch('https://api.github.com/user', {
+                headers: { Authorization: 'token ' + token }
+            });
+            if (!res.ok) throw new Error('Token rejected by GitHub');
+            ghUser = await res.json();
+            ghToken = token;
+            sessionStorage.setItem('gh_token', ghToken);
+            updateAuthUI();
+        } catch (e) {
+            alert('Could not sign in: ' + e.message);
+        }
+    }
+
+    function signOut() {
+        ghToken = '';
+        ghUser = null;
+        sessionStorage.removeItem('gh_token');
+        updateAuthUI();
+    }
+
+    async function restoreSession() {
+        if (!ghToken) return;
+        try {
+            var res = await fetch('https://api.github.com/user', {
+                headers: { Authorization: 'token ' + ghToken }
+            });
+            if (res.ok) {
+                ghUser = await res.json();
+                updateAuthUI();
+            } else {
+                sessionStorage.removeItem('gh_token');
+                ghToken = '';
+            }
+        } catch (e) {
+            // network error — leave token in place, just don't show as signed in
+        }
+    }
+
+    // ── GitHub API helpers ────────────────────────────────────────
+
+    async function ghGet(path) {
+        var res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + path + '?ref=' + BRANCH, {
+            headers: { Authorization: 'token ' + ghToken, Accept: 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+        return await res.json();
+    }
+
+    async function ghPut(path, utf8Content, sha, commitMessage) {
+        var encoded = btoa(unescape(encodeURIComponent(utf8Content)));
+        var body = { message: commitMessage, content: encoded, branch: BRANCH };
+        if (sha) body.sha = sha;
+        var res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + path, {
+            method: 'PUT',
+            headers: {
+                Authorization: 'token ' + ghToken,
+                Accept: 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            var err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Save failed (' + res.status + ')');
+        }
+        return await res.json();
+    }
+
+    // ── Editor open/close ─────────────────────────────────────────
+
+    function openEditorPanel() {
+        document.getElementById('editorPanel').classList.add('open');
+        document.getElementById('editorOverlay').classList.add('open');
+    }
+
+    function closeEditorPanel() {
+        document.getElementById('editorPanel').classList.remove('open');
+        document.getElementById('editorOverlay').classList.remove('open');
+        document.getElementById('editorNewFields').classList.remove('open');
+        setEditorStatus('');
+        editorSlug = null;
+        editorSha = null;
+    }
+
+    function setEditorTab(tab) {
+        editorTab = tab;
+        document.getElementById('tabWrite').classList.toggle('active', tab === 'write');
+        document.getElementById('tabPreview').classList.toggle('active', tab === 'preview');
+        document.getElementById('editorWritePane').classList.toggle('hidden', tab === 'preview');
+        document.getElementById('editorPreviewPane').classList.toggle('active', tab === 'preview');
+        if (tab === 'preview') updateEditorPreview();
+    }
+
+    function updateEditorPreview() {
+        var raw = document.getElementById('editorTextarea').value;
+        var fmt = document.getElementById('editorFormat').value;
+        var html;
+        if (fmt === 'html') {
+            html = raw;
+        } else {
+            var body = raw.replace(/^---[\s\S]*?---\n+/, '');
+            html = marked.parse(body);
+        }
+        document.getElementById('editorPreviewPane').innerHTML = DOMPurify.sanitize(html);
+    }
+
+    async function openEditNote(slug) {
+        editorSlug = slug;
+        editorSha = null;
+        document.getElementById('editorTitle').textContent = 'Edit: ' + slug;
+        document.getElementById('editorNewFields').classList.remove('open');
+        document.getElementById('editorTextarea').value = '';
+        document.getElementById('editorFormat').value = 'markdown';
+        setEditorTab('write');
+        setEditorStatus('Loading…');
+        openEditorPanel();
+        try {
+            var file = await ghGet('notes/' + slug + '.md');
+            editorSha = file.sha;
+            var content = decodeURIComponent(escape(atob(file.content.replace(/\n/g, ''))));
+            document.getElementById('editorTextarea').value = content;
+            setEditorStatus('');
+        } catch (e) {
+            setEditorStatus('Error loading note: ' + e.message, 'error');
+        }
+    }
+
+    function openNewNote() {
+        editorSlug = null;
+        editorSha = null;
+        document.getElementById('editorTitle').textContent = 'New note';
+        document.getElementById('editorNewFields').classList.add('open');
+        document.getElementById('editorTextarea').value = '';
+        document.getElementById('newDate').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('newTags').value = 'the-hunt';
+        document.getElementById('editorFormat').value = 'markdown';
+        setEditorTab('write');
+        setEditorStatus('');
+        openEditorPanel();
+    }
+
+    // ── Save ──────────────────────────────────────────────────────
+
+    async function saveEditor() {
+        var btn = document.getElementById('editorSaveBtn');
+        btn.disabled = true;
+        setEditorStatus('Saving…');
+
+        try {
+            var raw = document.getElementById('editorTextarea').value;
+            var fmt = document.getElementById('editorFormat').value;
+
+            // Convert HTML → Markdown if needed
+            var finalContent = raw;
+            if (fmt === 'html') {
+                var td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+                finalContent = td.turndown(raw);
+            }
+
+            if (editorSlug) {
+                // ── Update existing note ──
+                await ghPut(
+                    'notes/' + editorSlug + '.md',
+                    finalContent,
+                    editorSha,
+                    'Update notes: ' + editorSlug
+                );
+                setEditorStatus('Saved! CI will rebuild the index shortly.', 'success');
+            } else {
+                // ── Create new note ──
+                var authorSlug = document.getElementById('newAuthorSlug').value.trim();
+                var authorName = document.getElementById('newAuthorName').value.trim();
+                var date = document.getElementById('newDate').value.trim();
+                var tags = document.getElementById('newTags').value
+                    .split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+
+                if (!authorSlug || !authorName || !date) {
+                    setEditorStatus('Author slug, display name, and date are required.', 'error');
+                    btn.disabled = false;
+                    return;
+                }
+
+                var frontmatter = '---\ntags:\n'
+                    + (tags.length ? tags : ['the-hunt']).map(function(t) { return '  - ' + t; }).join('\n')
+                    + '\nauthor: ' + authorName
+                    + '\ndate: ' + date
+                    + '\n---\n\n';
+
+                await ghPut(
+                    'notes/' + authorSlug + '/' + date + '.md',
+                    frontmatter + finalContent,
+                    null,
+                    'Add huddle notes: ' + date + ' (' + authorName + ')'
+                );
+                setEditorStatus('Note created! CI will rebuild the index in a moment.', 'success');
+            }
+        } catch (e) {
+            setEditorStatus(e.message, 'error');
+        }
+
+        btn.disabled = false;
+    }
+
+    // ── Wire up editor events ─────────────────────────────────────
+
+    document.getElementById('editorCloseBtn').onclick = closeEditorPanel;
+    document.getElementById('editorOverlay').onclick = closeEditorPanel;
+    document.getElementById('editorSaveBtn').onclick = saveEditor;
+    document.getElementById('newNoteBtn').onclick = openNewNote;
+    document.getElementById('tabWrite').onclick = function() { setEditorTab('write'); };
+    document.getElementById('tabPreview').onclick = function() { setEditorTab('preview'); };
+    document.getElementById('editorFormat').onchange = function() {
+        if (editorTab === 'preview') updateEditorPreview();
+    };
+    document.getElementById('editNoteBtn').onclick = function() {
+        if (editorSlug) openEditNote(editorSlug);
+    };
+
+    // Update editNoteBtn to track the current note slug
+    var _baseShowNoteForEdit = showNote;
+    showNote = function(slug, fromHash) {
+        _baseShowNoteForEdit(slug, fromHash);
+        document.getElementById('editNoteBtn').dataset.slug = slug;
+        document.getElementById('editNoteBtn').onclick = function() { openEditNote(slug); };
+    };
+
+    updateAuthUI();
+    restoreSession();
 </script>
 
 </body>

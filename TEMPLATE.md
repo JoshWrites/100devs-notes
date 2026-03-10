@@ -3,6 +3,8 @@ tags:
   - the-hunt
 author: Your Name
 date: YYYY-MM-DD
+source: https://  # optional — URL of the original recording, doc, or resource
+discord: https://  # optional — link to the Discord message where these notes were posted
 ---
 
 Your huddle notes go here. Use markdown formatting freely:

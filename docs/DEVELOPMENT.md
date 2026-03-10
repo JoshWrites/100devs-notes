@@ -234,6 +234,55 @@ Generated automatically during `npm run build`. Sitemap is only generated when `
 SITE_URL=https://levinelabs.co.il/100devs/notes npm run build
 ```
 
+### Source URL and Discord attribution
+
+Notes support two optional link fields that appear in the note meta line next to the date and tags:
+
+| Field | Purpose |
+|---|---|
+| `source` | Link to the original recording, Google Doc, Pastebin, or any external resource |
+| `discord` | Link to the Discord message where the notes were posted |
+
+In a note file:
+```yaml
+---
+tags:
+  - the-hunt
+  - networking
+author: Anny Levine
+date: 2024-05-21
+source: https://docs.google.com/...
+discord: https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID
+---
+```
+
+Both fields render as clickable links in the note meta line in the viewer, and in the Read All view header for each note.
+
+Rules:
+- Both must be valid `http://` or `https://` URLs — the CI validator rejects anything else
+- Both are optional — omit them if not applicable
+- The build script validates URLs and silently drops malformed values rather than failing the build
+
+In `import/manifest.json`:
+```json
+{
+  "my-notes.rtf": {
+    "authorSlug": "annylevine",
+    "author": "Anny Levine",
+    "date": "2024-05-21",
+    "tags": ["the-hunt", "networking"],
+    "source": "https://docs.google.com/...",
+    "discord": "https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID"
+  }
+}
+```
+
+### Read All view
+
+A **read all** link in the sidebar nav loads every note body consecutively in a single scrollable page, sorted newest-first. Each note shows its author, date, tags, source, and Discord links as a header.
+
+This makes browser `Ctrl+F` work across the entire notes archive at once, and lets readers follow recurring advice or themes across multiple huddles over time. Tag filters and search also apply in Read All mode.
+
 ---
 
 ## 6. In-Browser Editing
@@ -264,9 +313,9 @@ On branch `in-browser-editing`. Adds GitHub-authenticated editing and note creat
 
 1. Sign in with your PAT
 2. Click **+ new note** at the bottom of the sidebar
-3. Fill in: author slug (folder name), display name, huddle date, tags
+3. Fill in: author slug (folder name), display name, huddle date, tags, and optionally a source URL
 4. Write content in the editor
-5. Click **Save** — auto-generates YAML frontmatter and commits to `main`
+5. Click **Save** — auto-generates YAML frontmatter (including `source` if provided) and commits to `main`
 
 ### Format toggle
 
@@ -281,20 +330,6 @@ On branch `in-browser-editing`. Adds GitHub-authenticated editing and note creat
 
 For importing many notes at once from mixed file formats. Especially useful for the initial re-import after fixing wrong attributions.
 
-### Requirements
-
-All format conversions go through **LibreOffice**, which must be installed locally. No npm dependencies are needed for the import tool beyond what's already in the repo.
-
-```bash
-# Check if LibreOffice is installed
-libreoffice --version
-
-# Install on Ubuntu/Debian if missing
-sudo apt install libreoffice
-```
-
-This design was intentional — using LibreOffice for all conversions means the import tool works correctly regardless of how `npm install` is invoked (`--omit=optional`, `--production`, etc.), and there's no risk of npm lockfile drift breaking bulk imports.
-
 ### Supported formats
 
 | Format | Conversion method |
@@ -302,7 +337,7 @@ This design was intentional — using LibreOffice for all conversions means the 
 | `.md` | Pass-through (frontmatter stripped and regenerated) |
 | `.html` | Turndown → Markdown |
 | `.rtf` | LibreOffice → HTML → Turndown → Markdown |
-| `.docx` | LibreOffice → HTML → Turndown → Markdown |
+| `.docx` | mammoth → HTML → Turndown → Markdown |
 
 ### Step 1 — Fill in the manifest
 
@@ -314,7 +349,9 @@ Edit `import/manifest.json` to map each source filename to its correct metadata:
     "authorSlug": "annylevine",
     "author": "Anny Levine",
     "date": "2024-05-21",
-    "tags": ["the-hunt", "networking"]
+    "tags": ["the-hunt", "networking"],
+    "source": "https://docs.google.com/...",
+    "discord": "https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID"
   },
   "june05-notes.docx": {
     "authorSlug": "michaelgovaerts",
@@ -325,7 +362,7 @@ Edit `import/manifest.json` to map each source filename to its correct metadata:
 }
 ```
 
-`authorSlug` must be lowercase letters, numbers, and hyphens only. `date` must be `YYYY-MM-DD`. Tags must be from the approved list (see section 11).
+`authorSlug` must be lowercase letters, numbers, and hyphens only. `date` must be `YYYY-MM-DD`. Tags must be from the approved list (see section 11). `source` is optional — include it when you have a URL to the original recording or document.
 
 ### Step 2 — Drop files into the import/ directory
 
@@ -454,24 +491,7 @@ Set these in GitHub repo settings → Secrets and variables → Actions:
 | `NOTES_DEPLOY_USER` | SSH username |
 | `NOTES_DEPLOY_PATH` | Remote path (e.g. `/home/user/`) |
 
-The deploy step is skipped when `NOTES_DEPLOY_KEY` is not set. This is implemented via a shell check step that writes to `GITHUB_OUTPUT` — secrets cannot be used directly in `if` expressions in GitHub Actions:
-
-```yaml
-- name: Check deploy secrets
-  id: deploy-check
-  run: |
-    if [ -n "$DEPLOY_KEY" ]; then
-      echo "enabled=true" >> $GITHUB_OUTPUT
-    else
-      echo "enabled=false" >> $GITHUB_OUTPUT
-    fi
-  env:
-    DEPLOY_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
-
-- name: Deploy data to server
-  if: steps.deploy-check.outputs.enabled == 'true'
-  ...
-```
+If `NOTES_DEPLOY_KEY` is not set, the deploy step is silently skipped.
 
 ### validate-notes.yml — triggers on PRs touching notes/
 

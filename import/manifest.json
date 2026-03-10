@@ -4,7 +4,9 @@
     "authorSlug": "annylevine",
     "author": "Anny Levine",
     "date": "2024-05-21",
-    "tags": ["the-hunt", "networking"]
+    "tags": ["the-hunt", "networking"],
+    "source": "https://example.com/recording-link",
+    "discord": "https://discord.com/channels/SERVER/CHANNEL/MESSAGE_ID"
   },
   "another-note.docx": {
     "authorSlug": "michaelgovaerts",

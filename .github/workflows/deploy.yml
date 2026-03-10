@@ -36,8 +36,19 @@ jobs:
           git add index.json
           git diff --cached --quiet && echo "No changes" || git commit -m "Rebuild index.json [skip ci]" && git push
 
+      - name: Check deploy secrets
+        id: deploy-check
+        run: |
+          if [ -n "$DEPLOY_KEY" ]; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          DEPLOY_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
+
       - name: Deploy data to server
-        if: ${{ secrets.NOTES_DEPLOY_KEY != '' }}
+        if: steps.deploy-check.outputs.enabled == 'true'
         continue-on-error: true
         uses: easingthemes/ssh-deploy@v4
         env:

@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>100Devs Notes</title>
+    <meta name="description" content="Community-maintained archive of notes from 100Devs huddle sessions." id="metaDesc">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="100Devs Notes">
+    <meta property="og:title" content="100Devs Notes" id="ogTitle">
+    <meta property="og:description" content="Community-maintained archive of notes from 100Devs huddle sessions." id="ogDesc">
+    <meta property="og:url" content="" id="ogUrl">
+    <meta property="og:image" content="https://levinelabs.co.il/assets/annymaster.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="100Devs Notes" id="twTitle">
+    <meta name="twitter:description" content="Community-maintained archive of notes from 100Devs huddle sessions." id="twDesc">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -379,13 +389,85 @@
             font-size: 0.78em;
             color: #999;
         }
+
+        /* Sticky note header */
+        .note-header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 5;
+        }
+
+        /* Mobile menu button (hidden on desktop) */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            height: 2px;
+            width: 20px;
+            background: #111;
+            border-radius: 1px;
+        }
+
+        /* Sidebar overlay (mobile) */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 19;
+        }
+        .sidebar-overlay.open { display: block; }
+
+        /* Mobile layout */
+        @media (max-width: 640px) {
+            .mobile-menu-btn { display: flex; }
+            .sidebar {
+                position: fixed;
+                top: 0; left: 0; bottom: 0;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 20;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .date-drawer { left: 0; }
+            .main { padding: 16px; }
+            .page-header { padding: 12px 16px; }
+            .page-header h1 { font-size: 1.4em; }
+            .page-header img { width: 44px; height: 44px; }
+        }
+
+        /* Print styles */
+        @media print {
+            html, body { height: auto; overflow: visible; }
+            .page-header, .sidebar, .sidebar-overlay,
+            .date-drawer, .note-header { display: none !important; }
+            .layout { display: block; }
+            .main { padding: 0; overflow: visible; height: auto; }
+            .note-view { display: block !important; }
+            .note-body a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
 <body>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Header: Anny photo + name + socials -->
     <div class="page-header">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
         <img src="https://levinelabs.co.il/assets/annymaster.jpeg" alt="Anny Levine">
         <div class="header-text">
             <h1>ANNY</h1>
@@ -482,6 +564,7 @@
             document.getElementById('promptState').className = 'error-state';
             document.getElementById('promptState').textContent = 'Could not load notes: ' + err.message;
         }
+        return true;
     }
 
     function escapeHtml(s) {
@@ -704,7 +787,85 @@
         document.querySelector('.main').scrollTop = 0;
     }
 
-    load();
+    // ── Deep linking ──────────────────────────────────────────────
+    function setHash(slug) {
+        history.replaceState(null, '', slug ? '#' + slug : location.pathname + location.search);
+    }
+
+    function updateMeta(title, description) {
+        document.title = title;
+        document.getElementById('ogTitle').setAttribute('content', title);
+        document.getElementById('ogDesc').setAttribute('content', description);
+        document.getElementById('ogUrl').setAttribute('content', location.href);
+        document.getElementById('twTitle').setAttribute('content', title);
+        document.getElementById('twDesc').setAttribute('content', description);
+        document.getElementById('metaDesc').setAttribute('content', description);
+    }
+
+    function navigateToHash() {
+        var slug = location.hash.slice(1);
+        if (!slug || !notes.length) return;
+        var note = notes.find(function(n) { return n.slug === slug; });
+        if (note) showNote(slug, true);
+    }
+
+    // ── Mobile sidebar ────────────────────────────────────────────
+    function openSidebar() {
+        document.querySelector('.sidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('open');
+    }
+    function closeSidebar() {
+        document.querySelector('.sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    // ── Patched showNote to support deep linking + title + OG ────
+    var _origShowNote = showNote;
+    showNote = function(slug, fromHash) {
+        var note = notes.find(function(n) { return n.slug === slug; });
+        if (!note) return;
+
+        closeDrawer();
+        closeSidebar();
+        document.getElementById('writerView').style.display = 'none';
+        document.getElementById('allNotesView').style.display = 'none';
+        var nv = document.getElementById('noteView');
+        nv.classList.add('active');
+
+        document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
+        populateDrawer(note.author);
+
+        document.getElementById('noteMeta').textContent = note.date
+            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
+        document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
+
+        document.getElementById('noteHamburger').onclick = toggleDrawer;
+        document.getElementById('noteHeaderLabel').onclick = toggleDrawer;
+
+        document.querySelector('.main').scrollTop = 0;
+
+        if (!fromHash) setHash(slug);
+        var desc = stripHtml(note.html).trim().slice(0, 160).replace(/\s+/g, ' ');
+        updateMeta(note.author + ' · ' + note.date + ' — 100Devs Notes', desc);
+    };
+
+    var _origShowWriter = showWriter;
+    showWriter = function(author) {
+        _origShowWriter(author);
+        closeSidebar();
+        setHash('');
+        updateMeta('100Devs Notes', 'Community-maintained archive of notes from 100Devs huddle sessions.');
+    };
+
+    var _origShowAllNotes = showAllNotes;
+    showAllNotes = function() {
+        _origShowAllNotes();
+        closeSidebar();
+        setHash('');
+        updateMeta('100Devs Notes', 'Community-maintained archive of notes from 100Devs huddle sessions.');
+    };
+
+    load().then(navigateToHash);
     document.getElementById('drawerClose').onclick = closeDrawer;
     document.getElementById('searchInput').addEventListener('input', function() {
         searchQuery = this.value.trim();
@@ -712,6 +873,9 @@
         if (selectedWriter === '__all__') showAllNotes();
         else if (selectedWriter) showWriter(selectedWriter);
     });
+    document.getElementById('mobileMenuBtn').onclick = openSidebar;
+    document.getElementById('sidebarOverlay').onclick = closeSidebar;
+    window.addEventListener('hashchange', navigateToHash);
 </script>
 
 </body>

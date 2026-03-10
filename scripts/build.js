@@ -122,6 +122,25 @@ function build() {
   index.sort((a, b) => a.lesson - b.lesson || a.slug.localeCompare(b.slug));
   fs.writeFileSync(path.join(DIST_DIR, 'index.json'), JSON.stringify(index), 'utf8');
 
+  const siteUrl = (process.env.SITE_URL || '').replace(/\/$/, '');
+
+  // robots.txt
+  const robotsTxt = siteUrl
+    ? `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml\n`
+    : `User-agent: *\nAllow: /\n`;
+  fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), robotsTxt, 'utf8');
+
+  // sitemap.xml
+  if (siteUrl) {
+    const today = new Date().toISOString().slice(0, 10);
+    const noteUrls = index.map(n =>
+      `  <url><loc>${siteUrl}/#${n.slug}</loc><lastmod>${n.date || today}</lastmod></url>`
+    ).join('\n');
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${siteUrl}/</loc><lastmod>${today}</lastmod></url>\n${noteUrls}\n</urlset>\n`;
+    fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemap, 'utf8');
+    console.log(`Generated sitemap.xml with ${index.length + 1} URLs`);
+  }
+
   console.log(`Built ${index.length} notes to ${DIST_DIR}`);
 }
 

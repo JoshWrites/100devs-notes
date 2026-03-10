@@ -484,7 +484,7 @@
             <div class="sidebar-nav">
                 <a href="https://levinelabs.co.il/anny.html">100devs</a>
                 <span class="sep">|</span>
-                <a href="#" class="active">our notes</a>
+                <a href="javascript:void(0)" class="active">our notes</a>
             </div>
 
             <div class="search-wrap">
@@ -818,34 +818,16 @@
         document.getElementById('sidebarOverlay').classList.remove('open');
     }
 
-    // ── Patched showNote to support deep linking + title + OG ────
-    var _origShowNote = showNote;
+    // ── Wrap showNote to add deep linking + title + OG ──────────
+    var _baseShowNote = showNote;
     showNote = function(slug, fromHash) {
+        _baseShowNote(slug);
+        closeSidebar();
         var note = notes.find(function(n) { return n.slug === slug; });
         if (!note) return;
-
-        closeDrawer();
-        closeSidebar();
-        document.getElementById('writerView').style.display = 'none';
-        document.getElementById('allNotesView').style.display = 'none';
-        var nv = document.getElementById('noteView');
-        nv.classList.add('active');
-
-        document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
-        populateDrawer(note.author);
-
-        document.getElementById('noteMeta').innerHTML = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>'
-            + (note.tags.length ? ' · ' + escapeHtml(note.tags.join(', ')) : '');
-        document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
-
-        document.getElementById('noteHamburger').onclick = toggleDrawer;
-        document.getElementById('noteHeaderLabel').onclick = toggleDrawer;
-
-        document.querySelector('.main').scrollTop = 0;
-
         if (!fromHash) setHash(slug);
         var desc = stripHtml(note.html).trim().slice(0, 160).replace(/\s+/g, ' ');
-        updateMeta(note.author + ' · ' + note.date + ' — 100Devs Notes', desc);
+        updateMeta(note.author + ' · ' + formatDate(note.date) + ' — 100Devs Notes', desc);
     };
 
     var _origShowWriter = showWriter;

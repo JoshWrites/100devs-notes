@@ -35,3 +35,16 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.json
           git diff --cached --quiet && echo "No changes" || git commit -m "Rebuild index.json [skip ci]" && git push
+
+      - name: Deploy data to server
+        if: ${{ secrets.NOTES_DEPLOY_KEY != '' }}
+        continue-on-error: true
+        uses: easingthemes/ssh-deploy@v4
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
+          REMOTE_HOST: ${{ secrets.NOTES_DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.NOTES_DEPLOY_USER }}
+          REMOTE_PATH: ${{ secrets.NOTES_DEPLOY_PATH }}data/
+          SOURCE: "dist/"
+        with:
+          args: "-avz --delete"

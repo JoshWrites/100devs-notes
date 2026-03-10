@@ -3,8 +3,8 @@
  * Bulk import notes from mixed file formats into the notes/ directory.
  *
  * Supported formats: .md, .html, .rtf, .docx
- * All conversions use LibreOffice — must be installed locally.
- * Install on Ubuntu/Debian: sudo apt install libreoffice
+ * RTF conversion requires LibreOffice to be installed.
+ * DOCX conversion uses mammoth (npm install --save-dev mammoth).
  *
  * Usage:
  *   node scripts/import-notes.js --dir ./import-files
@@ -85,29 +85,18 @@ function convertRtfToHtml(rtfPath) {
   return html;
 }
 
-function convertDocxToHtml(docxPath) {
-  // Use LibreOffice headlessly to convert DOCX → HTML
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'notes-import-'));
-  const result = spawnSync('libreoffice', [
-    '--headless',
-    '--convert-to', 'html',
-    '--outdir', tmpDir,
-    docxPath,
-  ], { encoding: 'utf8' });
-
-  if (result.status !== 0) {
-    throw new Error('LibreOffice conversion failed: ' + (result.stderr || result.stdout));
+async function convertDocxToHtml(docxPath) {
+  let mammoth;
+  try {
+    mammoth = require('mammoth');
+  } catch (e) {
+    throw new Error('mammoth not installed. Run: npm install --save-dev mammoth');
   }
-
-  const basename = path.basename(docxPath, path.extname(docxPath));
-  const htmlPath = path.join(tmpDir, basename + '.html');
-  if (!fs.existsSync(htmlPath)) {
-    throw new Error('LibreOffice did not produce an HTML file at ' + htmlPath);
+  const result = await mammoth.convertToHtml({ path: docxPath });
+  if (result.messages.length) {
+    result.messages.forEach(m => console.warn('  mammoth:', m.message));
   }
-
-  const html = fs.readFileSync(htmlPath, 'utf8');
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  return html;
+  return result.value;
 }
 
 function htmlToMarkdown(html) {
@@ -151,21 +140,23 @@ function validateMeta(filename, meta) {
 // ── Build frontmatter ─────────────────────────────────────────────
 
 function buildFrontmatter(meta) {
-  return [
+  const lines = [
     '---',
     'tags:',
     ...meta.tags.map(t => '  - ' + t),
     'author: ' + meta.author,
     'date: ' + meta.date,
-    '---',
-    '',
-    '',
-  ].join('\n');
+  ];
+  if (meta.source && /^https?:\/\//.test(meta.source)) {
+    lines.push('source: ' + meta.source);
+  }
+  lines.push('---', '', '');
+  return lines.join('\n');
 }
 
 // ── Main ──────────────────────────────────────────────────────────
 
-function main() {
+async function main() {
   const files = fs.readdirSync(importDir).filter(f => {
     const ext = path.extname(f).toLowerCase();
     return ['.md', '.html', '.rtf', '.docx'].includes(ext);
@@ -221,8 +212,8 @@ function main() {
         const html = convertRtfToHtml(filePath);
         markdown = htmlToMarkdown(html).trim();
       } else if (ext === '.docx') {
-        process.stdout.write('DOCX → HTML (LibreOffice) → Markdown');
-        const html = convertDocxToHtml(filePath);
+        process.stdout.write('DOCX → HTML (mammoth) → Markdown');
+        const html = await convertDocxToHtml(filePath);
         markdown = htmlToMarkdown(html).trim();
       }
 
@@ -260,9 +251,7 @@ function main() {
   }
 }
 
-try {
-  main();
-} catch (e) {
+main().catch(e => {
   console.error('Fatal error:', e.message);
   process.exit(1);
-}
+});

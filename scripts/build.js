@@ -111,6 +111,7 @@ function build() {
       author,
       date: frontmatter.date ?? '',
       title: frontmatter.title || extractTitle(body) || slug,
+      source: /^https?:\/\//.test(frontmatter.source || '') ? frontmatter.source : '',
       html
     };
     index.push(note);

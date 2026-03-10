@@ -390,13 +390,6 @@
             color: #999;
         }
 
-        /* Sticky note header */
-        .note-header {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            z-index: 5;
-        }
 
         /* Mobile menu button (hidden on desktop) */
         .mobile-menu-btn {
@@ -567,6 +560,12 @@
         return true;
     }
 
+    function formatDate(iso) {
+        var parts = String(iso).slice(0, 10).split('-');
+        if (parts.length !== 3) return iso;
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+
     function escapeHtml(s) {
         const d = document.createElement('div');
         d.textContent = s;
@@ -678,7 +677,7 @@
     function buildDateItems(filtered, container, onClickNote) {
         container.innerHTML = filtered.map(function(n) {
             return '<li data-slug="' + n.slug + '" title="' + escapeHtml(tagTooltip(n)) + '">'
-                + n.date
+                + formatDate(n.date)
                 + '</li>';
         }).join('');
         container.querySelectorAll('li').forEach(function(li) {
@@ -710,7 +709,7 @@
         listEl.innerHTML = filtered.map(function(n) {
             var extraTags = n.tags.filter(function(t) { return t !== 'the-hunt'; });
             return '<li data-slug="' + n.slug + '">'
-                + '<span class="card-date">' + escapeHtml(n.date) + '</span>'
+                + '<span class="card-date">' + escapeHtml(formatDate(n.date)) + '</span>'
                 + '<span class="card-author">' + escapeHtml(n.author) + '</span>'
                 + (extraTags.length ? '<span class="card-tags">' + escapeHtml(extraTags.join(', ')) + '</span>' : '')
                 + '</li>';
@@ -777,8 +776,8 @@
         document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
         populateDrawer(note.author);
 
-        document.getElementById('noteMeta').textContent = note.date
-            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
+        document.getElementById('noteMeta').innerHTML = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>'
+            + (note.tags.length ? ' · ' + escapeHtml(note.tags.join(', ')) : '');
         document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
 
         document.getElementById('noteHamburger').onclick = toggleDrawer;
@@ -835,8 +834,8 @@
         document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
         populateDrawer(note.author);
 
-        document.getElementById('noteMeta').textContent = note.date
-            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
+        document.getElementById('noteMeta').innerHTML = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>'
+            + (note.tags.length ? ' · ' + escapeHtml(note.tags.join(', ')) : '');
         document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
 
         document.getElementById('noteHamburger').onclick = toggleDrawer;

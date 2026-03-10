@@ -6,8 +6,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { marked } = require('marked');
+const yaml = require('js-yaml');
+const sanitizeHtml = require('sanitize-html');
 
 const NOTES_DIR = path.join(__dirname, '..', 'notes');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
@@ -22,11 +24,11 @@ function loadContributors() {
 function getGitAuthor(filePath) {
   try {
     const rel = path.relative(REPO_ROOT, filePath);
-    const out = execSync(`git log -1 --format=%an -- "${rel.replace(/"/g, '\\"')}"`, {
+    const result = spawnSync('git', ['log', '-1', '--format=%an', '--', rel], {
       cwd: REPO_ROOT,
       encoding: 'utf8'
     });
-    return out.trim();
+    return result.stdout.trim() || null;
   } catch {
     return null;
   }
@@ -41,28 +43,9 @@ function normalizeAuthor(author, contributors) {
 function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) return { frontmatter: {}, body: content };
-  const frontmatter = {};
-  const lines = match[1].split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const colon = line.indexOf(':');
-    if (colon === -1) continue;
-    const key = line.slice(0, colon).trim();
-    let value = line.slice(colon + 1).trim();
-    if (key === 'tags') {
-      const tags = [];
-      if (value && value !== '[]') {
-        tags.push(...value.replace(/^\[|\]$/g, '').split(',').map(t => t.trim()).filter(Boolean));
-      }
-      while (i + 1 < lines.length && /^\s+-\s+/.test(lines[i + 1])) {
-        tags.push(lines[++i].replace(/^\s+-\s+/, '').trim());
-      }
-      frontmatter.tags = tags;
-    } else if (key === 'lesson') {
-      frontmatter.lesson = parseInt(value, 10) || 0;
-    } else {
-      frontmatter[key] = value;
-    }
+  const frontmatter = yaml.load(match[1]) || {};
+  if (frontmatter.lesson !== undefined) {
+    frontmatter.lesson = parseInt(frontmatter.lesson, 10) || 0;
   }
   return { frontmatter, body: match[2] };
 }
@@ -101,7 +84,16 @@ function build() {
     const filePath = path.join(NOTES_DIR, file);
     const content = fs.readFileSync(filePath, 'utf8');
     const { frontmatter, body } = parseFrontmatter(content);
-    const html = marked.parse(body);
+    const html = sanitizeHtml(marked.parse(body), {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+      allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        'a': ['href', 'name', 'target', 'rel'],
+        'img': ['src', 'alt', 'title', 'width', 'height'],
+        'code': ['class'],
+        'pre': ['class'],
+      },
+    });
     // slug = author/date (e.g. michaelgovaerts/2026-02-27)
     const slug = file.replace(/\.md$/, '').replace(/\\/g, '/');
 

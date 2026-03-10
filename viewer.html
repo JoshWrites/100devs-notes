@@ -324,7 +324,12 @@
             font-style: italic;
             padding: 16px 0;
         }
+        .error-state {
+            color: #c00;
+            padding-top: 40px;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
 <body>
 
@@ -407,9 +412,15 @@
     let selectedWriter = null;
 
     async function load() {
-        const res = await fetch('index.json');
-        notes = await res.json();
-        buildSidebar();
+        try {
+            const res = await fetch('index.json');
+            if (!res.ok) throw new Error('Failed to load notes (' + res.status + ')');
+            notes = await res.json();
+            buildSidebar();
+        } catch (err) {
+            document.getElementById('promptState').className = 'error-state';
+            document.getElementById('promptState').textContent = 'Could not load notes: ' + err.message;
+        }
     }
 
     function escapeHtml(s) {
@@ -550,7 +561,7 @@
 
         document.getElementById('noteMeta').textContent = note.date
             + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
-        document.getElementById('noteBody').innerHTML = note.html;
+        document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
 
         document.getElementById('noteHamburger').onclick = toggleDrawer;
         document.getElementById('noteHeaderLabel').onclick = toggleDrawer;

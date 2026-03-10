@@ -17,6 +17,9 @@
   "devDependencies": {
     "js-yaml": "^4.1.1",
     "marked": "^12.0.0",
+    "sanitize-html": "^2.13.0"
+  },
+  "optionalDependencies": {
     "puppeteer": "^24.15.0"
   },
   "dependencies": {

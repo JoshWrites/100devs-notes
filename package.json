@@ -12,10 +12,13 @@
     "reorganize": "node scripts/reorganize-by-author.js",
     "retag": "node scripts/retag-notes.js",
     "recrawl": "CODA_HEADED=1 node scripts/recrawl-formatted.js",
-    "recrawl:errors": "CODA_HEADED=1 node scripts/recrawl-formatted.js --errors"
+    "recrawl:errors": "CODA_HEADED=1 node scripts/recrawl-formatted.js --errors",
+    "import": "node scripts/import-notes.js",
+    "import:dry": "node scripts/import-notes.js --dry-run"
   },
   "devDependencies": {
     "js-yaml": "^4.1.1",
+    "mammoth": "^1.8.0",
     "marked": "^12.0.0",
     "sanitize-html": "^2.13.0"
   },

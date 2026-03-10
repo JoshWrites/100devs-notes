@@ -1,0 +1,15 @@
+{
+  "_readme": "Map each source filename to its metadata. authorSlug = folder name (lowercase, no spaces). Remove this _readme key when ready.",
+  "example-huddle-notes.rtf": {
+    "authorSlug": "annylevine",
+    "author": "Anny Levine",
+    "date": "2024-05-21",
+    "tags": ["the-hunt", "networking"]
+  },
+  "another-note.docx": {
+    "authorSlug": "michaelgovaerts",
+    "author": "Michael Govaerts",
+    "date": "2024-06-05",
+    "tags": ["the-hunt", "resume"]
+  }
+}

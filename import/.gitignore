@@ -1,0 +1,5 @@
+# Ignore source files dropped in for import (keep only the manifest)
+*.rtf
+*.docx
+*.html
+*.md

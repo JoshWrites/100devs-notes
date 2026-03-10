@@ -281,6 +281,20 @@ On branch `in-browser-editing`. Adds GitHub-authenticated editing and note creat
 
 For importing many notes at once from mixed file formats. Especially useful for the initial re-import after fixing wrong attributions.
 
+### Requirements
+
+All format conversions go through **LibreOffice**, which must be installed locally. No npm dependencies are needed for the import tool beyond what's already in the repo.
+
+```bash
+# Check if LibreOffice is installed
+libreoffice --version
+
+# Install on Ubuntu/Debian if missing
+sudo apt install libreoffice
+```
+
+This design was intentional — using LibreOffice for all conversions means the import tool works correctly regardless of how `npm install` is invoked (`--omit=optional`, `--production`, etc.), and there's no risk of npm lockfile drift breaking bulk imports.
+
 ### Supported formats
 
 | Format | Conversion method |
@@ -288,7 +302,7 @@ For importing many notes at once from mixed file formats. Especially useful for 
 | `.md` | Pass-through (frontmatter stripped and regenerated) |
 | `.html` | Turndown → Markdown |
 | `.rtf` | LibreOffice → HTML → Turndown → Markdown |
-| `.docx` | mammoth → HTML → Turndown → Markdown |
+| `.docx` | LibreOffice → HTML → Turndown → Markdown |
 
 ### Step 1 — Fill in the manifest
 
@@ -440,7 +454,24 @@ Set these in GitHub repo settings → Secrets and variables → Actions:
 | `NOTES_DEPLOY_USER` | SSH username |
 | `NOTES_DEPLOY_PATH` | Remote path (e.g. `/home/user/`) |
 
-If `NOTES_DEPLOY_KEY` is not set, the deploy step is silently skipped.
+The deploy step is skipped when `NOTES_DEPLOY_KEY` is not set. This is implemented via a shell check step that writes to `GITHUB_OUTPUT` — secrets cannot be used directly in `if` expressions in GitHub Actions:
+
+```yaml
+- name: Check deploy secrets
+  id: deploy-check
+  run: |
+    if [ -n "$DEPLOY_KEY" ]; then
+      echo "enabled=true" >> $GITHUB_OUTPUT
+    else
+      echo "enabled=false" >> $GITHUB_OUTPUT
+    fi
+  env:
+    DEPLOY_KEY: ${{ secrets.NOTES_DEPLOY_KEY }}
+
+- name: Deploy data to server
+  if: steps.deploy-check.outputs.enabled == 'true'
+  ...
+```
 
 ### validate-notes.yml — triggers on PRs touching notes/
 

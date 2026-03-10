@@ -35,6 +35,7 @@ if (changedFiles.length === 0) {
 let errors = 0;
 
 for (const file of changedFiles) {
+  const prevErrors = errors;
   const filePath = path.join(REPO_ROOT, file);
   const parts = file.split('/'); // ['notes', 'author-slug', 'YYYY-MM-DD.md']
 
@@ -77,7 +78,7 @@ for (const file of changedFiles) {
   if (!fm.date) {
     console.error(`❌ ${file}: frontmatter missing required field: date`);
     errors++;
-  } else if (String(fm.date) !== filenameDate) {
+  } else if (String(fm.date).slice(0, 10) !== filenameDate) {
     console.error(`❌ ${file}: frontmatter date (${fm.date}) does not match filename (${filenameDate})`);
     errors++;
   }
@@ -103,7 +104,7 @@ for (const file of changedFiles) {
     errors++;
   }
 
-  if (errors === 0 || !changedFiles.slice(0, changedFiles.indexOf(file) + 1).some(() => true)) {
+  if (errors === prevErrors) {
     console.log(`✓ ${file}`);
   }
 }

@@ -390,13 +390,6 @@
             color: #999;
         }
 
-        /* Sticky note header */
-        .note-header {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            z-index: 5;
-        }
 
         /* Mobile menu button (hidden on desktop) */
         .mobile-menu-btn {
@@ -491,7 +484,7 @@
             <div class="sidebar-nav">
                 <a href="https://levinelabs.co.il/anny.html">100devs</a>
                 <span class="sep">|</span>
-                <a href="#" class="active">our notes</a>
+                <a href="javascript:void(0)" class="active">our notes</a>
             </div>
 
             <div class="search-wrap">
@@ -565,6 +558,12 @@
             document.getElementById('promptState').textContent = 'Could not load notes: ' + err.message;
         }
         return true;
+    }
+
+    function formatDate(iso) {
+        var parts = String(iso).slice(0, 10).split('-');
+        if (parts.length !== 3) return iso;
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
     }
 
     function escapeHtml(s) {
@@ -678,7 +677,7 @@
     function buildDateItems(filtered, container, onClickNote) {
         container.innerHTML = filtered.map(function(n) {
             return '<li data-slug="' + n.slug + '" title="' + escapeHtml(tagTooltip(n)) + '">'
-                + n.date
+                + formatDate(n.date)
                 + '</li>';
         }).join('');
         container.querySelectorAll('li').forEach(function(li) {
@@ -710,7 +709,7 @@
         listEl.innerHTML = filtered.map(function(n) {
             var extraTags = n.tags.filter(function(t) { return t !== 'the-hunt'; });
             return '<li data-slug="' + n.slug + '">'
-                + '<span class="card-date">' + escapeHtml(n.date) + '</span>'
+                + '<span class="card-date">' + escapeHtml(formatDate(n.date)) + '</span>'
                 + '<span class="card-author">' + escapeHtml(n.author) + '</span>'
                 + (extraTags.length ? '<span class="card-tags">' + escapeHtml(extraTags.join(', ')) + '</span>' : '')
                 + '</li>';
@@ -777,8 +776,8 @@
         document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
         populateDrawer(note.author);
 
-        document.getElementById('noteMeta').textContent = note.date
-            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
+        document.getElementById('noteMeta').innerHTML = '<strong>' + escapeHtml(formatDate(note.date)) + '</strong>'
+            + (note.tags.length ? ' · ' + escapeHtml(note.tags.join(', ')) : '');
         document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
 
         document.getElementById('noteHamburger').onclick = toggleDrawer;
@@ -819,34 +818,16 @@
         document.getElementById('sidebarOverlay').classList.remove('open');
     }
 
-    // ── Patched showNote to support deep linking + title + OG ────
-    var _origShowNote = showNote;
+    // ── Wrap showNote to add deep linking + title + OG ──────────
+    var _baseShowNote = showNote;
     showNote = function(slug, fromHash) {
+        _baseShowNote(slug);
+        closeSidebar();
         var note = notes.find(function(n) { return n.slug === slug; });
         if (!note) return;
-
-        closeDrawer();
-        closeSidebar();
-        document.getElementById('writerView').style.display = 'none';
-        document.getElementById('allNotesView').style.display = 'none';
-        var nv = document.getElementById('noteView');
-        nv.classList.add('active');
-
-        document.getElementById('noteHeaderLabel').textContent = note.author + "'s notes";
-        populateDrawer(note.author);
-
-        document.getElementById('noteMeta').textContent = note.date
-            + (note.tags.length ? ' · ' + note.tags.join(', ') : '');
-        document.getElementById('noteBody').innerHTML = DOMPurify.sanitize(note.html);
-
-        document.getElementById('noteHamburger').onclick = toggleDrawer;
-        document.getElementById('noteHeaderLabel').onclick = toggleDrawer;
-
-        document.querySelector('.main').scrollTop = 0;
-
         if (!fromHash) setHash(slug);
         var desc = stripHtml(note.html).trim().slice(0, 160).replace(/\s+/g, ' ');
-        updateMeta(note.author + ' · ' + note.date + ' — 100Devs Notes', desc);
+        updateMeta(note.author + ' · ' + formatDate(note.date) + ' — 100Devs Notes', desc);
     };
 
     var _origShowWriter = showWriter;
